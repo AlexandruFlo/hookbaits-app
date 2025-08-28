@@ -34,18 +34,17 @@ jobs:
           # Scaffold missing android folder if not present
           if [ ! -d android ]; then flutter create . --platforms=android; fi
           flutter pub get
-          # Prepare app icon if a LOGO_URL is provided
-          if [ -f assets/icon.png ]; then \
-            echo "Using local assets/icon.png"; \
-          elif [ -n "${{ secrets.LOGO_URL }}" ]; then \
-            mkdir -p assets && \
-            curl -L "${{ secrets.LOGO_URL }}" -o assets/icon.png; \
-          else \
-            # fallback simple placeholder
-            mkdir -p assets && \
-            convert -size 1024x1024 xc:#0A7F2E -gravity center -pointsize 200 -fill white -font DejaVu-Sans -draw "text 0,0 'H'" assets/icon.png; \
+          # Prepare app icon from local or LOGO_URL; else skip
+          if [ -f assets/icon.png ]; then
+            echo "Using local assets/icon.png"
+            flutter pub run flutter_launcher_icons
+          elif [ -n "${{ secrets.LOGO_URL }}" ]; then
+            mkdir -p assets
+            curl -L "${{ secrets.LOGO_URL }}" -o assets/icon.png
+            flutter pub run flutter_launcher_icons
+          else
+            echo "No icon provided; skipping flutter_launcher_icons"
           fi
-          flutter pub run flutter_launcher_icons
 
       - name: Build APK (release)
         working-directory: public_html/mobile_app
@@ -60,4 +59,5 @@ jobs:
         with:
           name: hookbaits-apk
           path: public_html/mobile_app/build/app/outputs/flutter-apk/app-release.apk
+
 
