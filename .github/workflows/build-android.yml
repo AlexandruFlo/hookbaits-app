@@ -42,6 +42,12 @@ jobs:
           # Scaffold missing android folder if not present
           if [ ! -d android ]; then flutter create . --platforms=android; fi
           flutter pub get
+          # Ensure Android build settings are compatible with plugins (e.g., webview_flutter)
+          if [ -f android/app/build.gradle ]; then
+            sed -i "s/minSdkVersion [0-9]\+/minSdkVersion 21/" android/app/build.gradle || true
+            sed -i "s/targetSdkVersion [0-9]\+/targetSdkVersion 34/" android/app/build.gradle || true
+            sed -i "s/compileSdkVersion [0-9]\+/compileSdkVersion 34/" android/app/build.gradle || true
+          fi
           # Prepare app icon from local or LOGO_URL; auto-pad to 1024x1024; else skip
           if [ -f assets/icon.png ]; then
             echo "Using local assets/icon.png"
