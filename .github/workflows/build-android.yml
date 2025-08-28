@@ -24,20 +24,152 @@ jobs:
           channel: 'stable'
           flutter-version: '3.22.2'
 
-      - name: Prepare Flutter project
+      - name: Create Flutter project
+        working-directory: public_html
+        run: |
+          flutter create mobile_app --org com.hookbaits --project-name hookbaits_shop --platforms=android
+          cd mobile_app
+          flutter pub add http webview_flutter provider cached_network_image
+          flutter pub add dev:flutter_launcher_icons
+
+      - name: Create main.dart
         working-directory: public_html/mobile_app
         run: |
-          flutter --version
-          # Creează platforma Android doar dacă lipsește (nu suprascrie proiectul)
-          if [ ! -d android ]; then
-            flutter create . --platforms=android --org com.hookbaits --project-name hookbaits_shop
-          fi
-          flutter pub get
+          echo 'import "package:flutter/material.dart";' > lib/main.dart
+          echo 'import "package:provider/provider.dart";' >> lib/main.dart
+          echo 'import "screens/home_screen.dart";' >> lib/main.dart
+          echo 'import "state/cart.dart";' >> lib/main.dart
+          echo '' >> lib/main.dart
+          echo 'void main() { runApp(MyApp()); }' >> lib/main.dart
+          echo '' >> lib/main.dart
+          echo 'class MyApp extends StatelessWidget {' >> lib/main.dart
+          echo '  @override' >> lib/main.dart
+          echo '  Widget build(BuildContext context) {' >> lib/main.dart
+          echo '    return ChangeNotifierProvider(' >> lib/main.dart
+          echo '      create: (context) => CartState(),' >> lib/main.dart
+          echo '      child: MaterialApp(' >> lib/main.dart
+          echo '        title: "Hookbaits",' >> lib/main.dart
+          echo '        theme: ThemeData(primarySwatch: Colors.blue),' >> lib/main.dart
+          echo '        home: HomeScreen(),' >> lib/main.dart
+          echo '      ),' >> lib/main.dart
+          echo '    );' >> lib/main.dart
+          echo '  }' >> lib/main.dart
+          echo '}' >> lib/main.dart
+
+      - name: Create config.dart
+        working-directory: public_html/mobile_app
+        run: |
+          echo 'class Config {' > lib/config.dart
+          echo '  static const String baseUrl = String.fromEnvironment("BASE_URL", defaultValue: "https://hookbaits.ro");' >> lib/config.dart
+          echo '}' >> lib/config.dart
+
+      - name: Create cart state
+        working-directory: public_html/mobile_app
+        run: |
+          mkdir -p lib/state
+          echo 'import "package:flutter/foundation.dart";' > lib/state/cart.dart
+          echo '' >> lib/state/cart.dart
+          echo 'class CartState extends ChangeNotifier {' >> lib/state/cart.dart
+          echo '  final List<CartItem> _items = [];' >> lib/state/cart.dart
+          echo '  List<CartItem> get items => List.unmodifiable(_items);' >> lib/state/cart.dart
+          echo '  void addItem(Map<String, dynamic> product) { notifyListeners(); }' >> lib/state/cart.dart
+          echo '  void removeItem(int id) { notifyListeners(); }' >> lib/state/cart.dart
+          echo '  double get total => 0.0;' >> lib/state/cart.dart
+          echo '}' >> lib/state/cart.dart
+          echo '' >> lib/state/cart.dart
+          echo 'class CartItem {' >> lib/state/cart.dart
+          echo '  final int id; final String name; final double price; final String image; int quantity;' >> lib/state/cart.dart
+          echo '  CartItem({required this.id, required this.name, required this.price, required this.image, required this.quantity});' >> lib/state/cart.dart
+          echo '}' >> lib/state/cart.dart
+
+      - name: Create screens
+        working-directory: public_html/mobile_app
+        run: |
+          mkdir -p lib/screens
+          echo 'import "package:flutter/material.dart";' > lib/screens/home_screen.dart
+          echo 'import "product_list_screen.dart";' >> lib/screens/home_screen.dart
+          echo 'import "cart_screen.dart";' >> lib/screens/home_screen.dart
+          echo '' >> lib/screens/home_screen.dart
+          echo 'class HomeScreen extends StatelessWidget {' >> lib/screens/home_screen.dart
+          echo '  @override' >> lib/screens/home_screen.dart
+          echo '  Widget build(BuildContext context) {' >> lib/screens/home_screen.dart
+          echo '    return Scaffold(' >> lib/screens/home_screen.dart
+          echo '      appBar: AppBar(title: Text("Hookbaits")),' >> lib/screens/home_screen.dart
+          echo '      body: ProductListScreen(),' >> lib/screens/home_screen.dart
+          echo '    );' >> lib/screens/home_screen.dart
+          echo '  }' >> lib/screens/home_screen.dart
+          echo '}' >> lib/screens/home_screen.dart
+
+          echo 'import "package:flutter/material.dart";' > lib/screens/product_list_screen.dart
+          echo 'import "package:http/http.dart" as http;' >> lib/screens/product_list_screen.dart
+          echo 'import "dart:convert";' >> lib/screens/product_list_screen.dart
+          echo 'import "../config.dart";' >> lib/screens/product_list_screen.dart
+          echo '' >> lib/screens/product_list_screen.dart
+          echo 'class ProductListScreen extends StatefulWidget {' >> lib/screens/product_list_screen.dart
+          echo '  @override' >> lib/screens/product_list_screen.dart
+          echo '  _ProductListScreenState createState() => _ProductListScreenState();' >> lib/screens/product_list_screen.dart
+          echo '}' >> lib/screens/product_list_screen.dart
+          echo '' >> lib/screens/product_list_screen.dart
+          echo 'class _ProductListScreenState extends State<ProductListScreen> {' >> lib/screens/product_list_screen.dart
+          echo '  List<dynamic> products = [];' >> lib/screens/product_list_screen.dart
+          echo '  bool isLoading = true;' >> lib/screens/product_list_screen.dart
+          echo '' >> lib/screens/product_list_screen.dart
+          echo '  @override' >> lib/screens/product_list_screen.dart
+          echo '  void initState() { super.initState(); _loadProducts(); }' >> lib/screens/product_list_screen.dart
+          echo '' >> lib/screens/product_list_screen.dart
+          echo '  Future<void> _loadProducts() async {' >> lib/screens/product_list_screen.dart
+          echo '    try {' >> lib/screens/product_list_screen.dart
+          echo '      final response = await http.get(Uri.parse("${Config.baseUrl}/wp-json/wc/v3/products"));' >> lib/screens/product_list_screen.dart
+          echo '      if (response.statusCode == 200) {' >> lib/screens/product_list_screen.dart
+          echo '        setState(() { products = json.decode(response.body); isLoading = false; });' >> lib/screens/product_list_screen.dart
+          echo '      }' >> lib/screens/product_list_screen.dart
+          echo '    } catch (e) { setState(() { isLoading = false; }); }' >> lib/screens/product_list_screen.dart
+          echo '  }' >> lib/screens/product_list_screen.dart
+          echo '' >> lib/screens/product_list_screen.dart
+          echo '  @override' >> lib/screens/product_list_screen.dart
+          echo '  Widget build(BuildContext context) {' >> lib/screens/product_list_screen.dart
+          echo '    if (isLoading) return Center(child: CircularProgressIndicator());' >> lib/screens/product_list_screen.dart
+          echo '    return GridView.builder(' >> lib/screens/product_list_screen.dart
+          echo '      padding: EdgeInsets.all(16),' >> lib/screens/product_list_screen.dart
+          echo '      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),' >> lib/screens/product_list_screen.dart
+          echo '      itemCount: products.length,' >> lib/screens/product_list_screen.dart
+          echo '      itemBuilder: (context, index) {' >> lib/screens/product_list_screen.dart
+          echo '        final product = products[index];' >> lib/screens/product_list_screen.dart
+          echo '        return Card(child: ListTile(title: Text(product["name"]), subtitle: Text(product["price"])));' >> lib/screens/product_list_screen.dart
+          echo '      },' >> lib/screens/product_list_screen.dart
+          echo '    );' >> lib/screens/product_list_screen.dart
+          echo '  }' >> lib/screens/product_list_screen.dart
+          echo '}' >> lib/screens/product_list_screen.dart
+
+          echo 'import "package:flutter/material.dart";' > lib/screens/cart_screen.dart
+          echo 'import "package:provider/provider.dart";' >> lib/screens/cart_screen.dart
+          echo 'import "../state/cart.dart";' >> lib/screens/cart_screen.dart
+          echo '' >> lib/screens/cart_screen.dart
+          echo 'class CartScreen extends StatelessWidget {' >> lib/screens/cart_screen.dart
+          echo '  @override' >> lib/screens/cart_screen.dart
+          echo '  Widget build(BuildContext context) {' >> lib/screens/cart_screen.dart
+          echo '    return Scaffold(' >> lib/screens/cart_screen.dart
+          echo '      appBar: AppBar(title: Text("Coșul meu")),' >> lib/screens/cart_screen.dart
+          echo '      body: Center(child: Text("Coșul este gol")),' >> lib/screens/cart_screen.dart
+          echo '    );' >> lib/screens/cart_screen.dart
+          echo '  }' >> lib/screens/cart_screen.dart
+          echo '}' >> lib/screens/cart_screen.dart
+
+      - name: Configure Android v2 embedding
+        working-directory: public_html/mobile_app
+        run: |
           if [ -f android/app/build.gradle ]; then
-            sed -i "s/minSdkVersion [0-9]\+/minSdkVersion 21/" android/app/build.gradle || true
+            sed -i "s/minSdkVersion [0-9]\+/minSdkVersion 21/" android/app/build.gradle
+            sed -i "s/compileSdkVersion [0-9]\+/compileSdkVersion 34/" android/app/build.gradle
+            sed -i "s/targetSdkVersion [0-9]\+/targetSdkVersion 34/" android/app/build.gradle
           fi
 
-      - name: Build APK (release) via Flutter
+      - name: Set app name
+        working-directory: public_html/mobile_app
+        run: |
+          sed -i 's/<string name="title">.*<\/string>/<string name="title">Hookbaits<\/string>/' android/app/src/main/res/values/strings.xml
+
+      - name: Build APK
         working-directory: public_html/mobile_app
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
@@ -45,14 +177,8 @@ jobs:
           if [ -z "$BASE_URL" ]; then BASE_URL=https://hookbaits.ro; fi
           flutter build apk --release --dart-define=BASE_URL=$BASE_URL
 
-      - name: List APK outputs
-        working-directory: public_html/mobile_app
-        run: |
-          echo "Listing build/app/outputs" && ls -R build/app/outputs || true
-
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: hookbaits-apk
-          path: |
-            public_html/mobile_app/build/app/outputs/**/*.apk
+          path: public_html/mobile_app/build/app/outputs/**/*.apk
