@@ -135,9 +135,14 @@ jobs:
           echo 'import "package:flutter/material.dart"; class AccountScreen extends StatelessWidget { Widget build(context) { return Scaffold( appBar: AppBar(title: Text("Contul meu"), backgroundColor: Colors.blue), body: ListView( padding: EdgeInsets.all(16), children: [ Card( child: ListTile( leading: CircleAvatar(child: Icon(Icons.person)), title: Text("Conectează-te"), subtitle: Text("Pentru a accesa contul tău"), trailing: Icon(Icons.arrow_forward_ios), onTap: () { ScaffoldMessenger.of(context).showSnackBar( SnackBar(content: Text("Funcționalitate în dezvoltare")), ); }, ), ), SizedBox(height: 16), Card( child: Column( children: [ ListTile( leading: Icon(Icons.history), title: Text("Comenzile mele"), trailing: Icon(Icons.arrow_forward_ios), onTap: () { ScaffoldMessenger.of(context).showSnackBar( SnackBar(content: Text("Funcționalitate în dezvoltare")), ); }, ), Divider(), ListTile( leading: Icon(Icons.favorite), title: Text("Produse favorite"), trailing: Icon(Icons.arrow_forward_ios), onTap: () { ScaffoldMessenger.of(context).showSnackBar( SnackBar(content: Text("Funcționalitate în dezvoltare")), ); }, ), Divider(), ListTile( leading: Icon(Icons.settings), title: Text("Setări"), trailing: Icon(Icons.arrow_forward_ios), onTap: () { ScaffoldMessenger.of(context).showSnackBar( SnackBar(content: Text("Funcționalitate în dezvoltare")), ); }, ), ], ), ), SizedBox(height: 16), Card( child: Column( children: [ ListTile( leading: Icon(Icons.help), title: Text("Ajutor și suport"), trailing: Icon(Icons.arrow_forward_ios), onTap: () { ScaffoldMessenger.of(context).showSnackBar( SnackBar(content: Text("Pentru suport: contact@hookbaits.ro")), ); }, ), Divider(), ListTile( leading: Icon(Icons.info), title: Text("Despre aplicație"), trailing: Icon(Icons.arrow_forward_ios), onTap: () { showDialog( context: context, builder: (context) => AlertDialog( title: Text("Hookbaits"), content: Text("Aplicația oficială Hookbaits pentru comenzi online de produse de pescuit."), actions: [ TextButton( onPressed: () => Navigator.pop(context), child: Text("OK"), ), ], ), ); }, ), ], ), ), ], ), ); } }' > lib/screens/account_screen.dart
 
       - name: Copy app icon
+        run: |
+          ls -la Hook_alb-400x122.png
+          mkdir -p mobile_app/assets
+          cp Hook_alb-400x122.png mobile_app/assets/icon.png
+
+      - name: Configure app icon
         working-directory: mobile_app
         run: |
-          cp ../Hook_alb-400x122.png assets/icon.png
           flutter pub add dev:flutter_launcher_icons
           echo 'flutter_launcher_icons:' >> pubspec.yaml
           echo '  android: true' >> pubspec.yaml
@@ -167,6 +172,7 @@ jobs:
         with:
           name: hookbaits-apk
           path: mobile_app/build/app/outputs/**/*.apk
+
 
 
 
