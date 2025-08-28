@@ -144,14 +144,17 @@ jobs:
         working-directory: mobile_app
         run: |
           flutter pub add dev:flutter_launcher_icons
-          echo 'flutter_launcher_icons:' >> pubspec.yaml
-          echo '  android: true' >> pubspec.yaml
-          echo '  ios: false' >> pubspec.yaml
-          echo '  image_path: "assets/icon.png"' >> pubspec.yaml
-          echo '  adaptive_icon_background: "#FFFFFF"' >> pubspec.yaml
-          echo '  adaptive_icon_foreground: "assets/icon.png"' >> pubspec.yaml
+          if ! grep -q "flutter_launcher_icons:" pubspec.yaml; then
+            echo '' >> pubspec.yaml
+            echo 'flutter_launcher_icons:' >> pubspec.yaml
+            echo '  android: true' >> pubspec.yaml
+            echo '  ios: false' >> pubspec.yaml
+            echo '  image_path: "assets/icon.png"' >> pubspec.yaml
+            echo '  adaptive_icon_background: "#FFFFFF"' >> pubspec.yaml
+            echo '  adaptive_icon_foreground: "assets/icon.png"' >> pubspec.yaml
+          fi
           flutter packages get
-          flutter packages pub run flutter_launcher_icons:main
+          dart run flutter_launcher_icons:main
 
       - name: Configure Android
         working-directory: mobile_app
