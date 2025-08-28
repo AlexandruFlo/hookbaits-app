@@ -54,6 +54,13 @@ jobs:
           sed -i "s/io.flutter.app.FlutterActivity/io.flutter.embedding.android.FlutterActivity/g" android/app/src/main/kotlin/com/hookbaits/hookbaits_shop/MainActivity.kt || true
           sed -i "s/GeneratedPluginRegistrant\.registerWith(this)//g" android/app/src/main/kotlin/com/hookbaits/hookbaits_shop/MainActivity.kt || true
         fi
+        # Ensure flutterEmbedding v2 meta-data is present in AndroidManifest
+        if [ -f android/app/src/main/AndroidManifest.xml ]; then
+          if ! grep -q 'android:name="flutterEmbedding"' android/app/src/main/AndroidManifest.xml; then
+            sed -i '/<application[[:space:]>]/a \
+    <meta-data\n+        android:name="flutterEmbedding"\n+        android:value="2" />' android/app/src/main/AndroidManifest.xml || true
+          fi
+        fi
         # App icon from local assets/icon.png or LOGO_URL
         if [ -f assets/icon.png ]; then
           python -c "from PIL import Image; img=Image.open('assets/icon.png').convert('RGBA'); s=1024; c=Image.new('RGBA',(s,s),(10,127,46,255)); r=min(s/img.width, s/img.height); ns=(int(img.width*r), int(img.height*r)); img=img.resize(ns, Image.LANCZOS); c.paste(img,((s-img.width)//2,(s-img.height)//2),img); c.save('assets/icon.png')"
