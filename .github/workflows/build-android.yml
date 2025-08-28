@@ -128,375 +128,240 @@ jobs:
           }
           EOF
           
-          cat > lib/screens/home_screen.dart << 'EOF'
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:provider/provider.dart';
-import '../state/cart_state.dart';
-import '../config.dart';
-
-class HomeScreen extends StatefulWidget {
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  List products = [];
-  bool loading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    loadProducts();
-  }
-
-  loadProducts() async {
-    try {
-      final response = await http.get(Uri.parse('${Config.baseUrl}/wp-json/wc/v3/products?per_page=50'));
-      if (response.statusCode == 200) {
-        setState(() {
-          products = json.decode(response.body);
-          loading = false;
-        });
-      }
-    } catch (e) {
-      setState(() => loading = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Icon(Icons.anchor, color: Colors.white),
-            SizedBox(width: 10),
-            Text('HOOKBAITS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ],
-        ),
-        backgroundColor: Color(0xFFE31E24),
-        elevation: 0,
-      ),
-      body: loading 
-        ? Center(child: CircularProgressIndicator(color: Color(0xFFE31E24)))
-        : GridView.builder(
-            padding: EdgeInsets.all(16),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.65,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: products.length,
-            itemBuilder: (context, index) {
-              final product = products[index];
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      spreadRadius: 1,
-                      blurRadius: 5,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
-                        child: product['images'] != null && product['images'].isNotEmpty
-                          ? Image.network(
-                              product['images'][0]['src'],
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                color: Colors.grey[100],
-                                child: Icon(Icons.image, size: 50, color: Colors.grey[400]),
-                              ),
-                            )
-                          : Container(
-                              color: Colors.grey[100],
-                              child: Icon(Icons.image, size: 50, color: Colors.grey[400]),
-                            ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              product['name'] ?? 'Produs',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            SizedBox(height: 6),
-                            Text(
-                              '${product['price'] ?? '0'} RON',
-                              style: TextStyle(color: Color(0xFFE31E24), fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                            Spacer(),
-                            Container(
-                              width: double.infinity,
-                              height: 32,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  Provider.of<CartState>(context, listen: false).add(product);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('${product['name']} adăugat în coș'),
-                                      backgroundColor: Color(0xFFE31E24),
-                                    ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color(0xFFE31E24),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                                ),
-                                child: Text('ADAUGĂ', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-    );
-  }
-}
-EOF
+          echo 'import "package:flutter/material.dart";' > lib/screens/home_screen.dart
+          echo 'import "package:http/http.dart" as http;' >> lib/screens/home_screen.dart
+          echo 'import "dart:convert";' >> lib/screens/home_screen.dart
+          echo 'import "package:provider/provider.dart";' >> lib/screens/home_screen.dart
+          echo 'import "../state/cart_state.dart";' >> lib/screens/home_screen.dart
+          echo 'import "../config.dart";' >> lib/screens/home_screen.dart
+          echo '' >> lib/screens/home_screen.dart
+          echo 'class HomeScreen extends StatefulWidget {' >> lib/screens/home_screen.dart
+          echo '  @override' >> lib/screens/home_screen.dart
+          echo '  _HomeScreenState createState() => _HomeScreenState();' >> lib/screens/home_screen.dart
+          echo '}' >> lib/screens/home_screen.dart
+          echo '' >> lib/screens/home_screen.dart
+          echo 'class _HomeScreenState extends State<HomeScreen> {' >> lib/screens/home_screen.dart
+          echo '  List products = [];' >> lib/screens/home_screen.dart
+          echo '  bool loading = true;' >> lib/screens/home_screen.dart
+          echo '' >> lib/screens/home_screen.dart
+          echo '  @override' >> lib/screens/home_screen.dart
+          echo '  void initState() {' >> lib/screens/home_screen.dart
+          echo '    super.initState();' >> lib/screens/home_screen.dart
+          echo '    loadProducts();' >> lib/screens/home_screen.dart
+          echo '  }' >> lib/screens/home_screen.dart
+          echo '' >> lib/screens/home_screen.dart
+          echo '  loadProducts() async {' >> lib/screens/home_screen.dart
+          echo '    try {' >> lib/screens/home_screen.dart
+          echo '      final response = await http.get(Uri.parse("${Config.baseUrl}/wp-json/wc/v3/products?per_page=50"));' >> lib/screens/home_screen.dart
+          echo '      if (response.statusCode == 200) {' >> lib/screens/home_screen.dart
+          echo '        setState(() {' >> lib/screens/home_screen.dart
+          echo '          products = json.decode(response.body);' >> lib/screens/home_screen.dart
+          echo '          loading = false;' >> lib/screens/home_screen.dart
+          echo '        });' >> lib/screens/home_screen.dart
+          echo '      }' >> lib/screens/home_screen.dart
+          echo '    } catch (e) {' >> lib/screens/home_screen.dart
+          echo '      setState(() => loading = false);' >> lib/screens/home_screen.dart
+          echo '    }' >> lib/screens/home_screen.dart
+          echo '  }' >> lib/screens/home_screen.dart
+          echo '' >> lib/screens/home_screen.dart
+          echo '  @override' >> lib/screens/home_screen.dart
+          echo '  Widget build(BuildContext context) {' >> lib/screens/home_screen.dart
+          echo '    return Scaffold(' >> lib/screens/home_screen.dart
+          echo '      backgroundColor: Colors.white,' >> lib/screens/home_screen.dart
+          echo '      appBar: AppBar(' >> lib/screens/home_screen.dart
+          echo '        title: Row(' >> lib/screens/home_screen.dart
+          echo '          children: [' >> lib/screens/home_screen.dart
+          echo '            Icon(Icons.anchor, color: Colors.white),' >> lib/screens/home_screen.dart
+          echo '            SizedBox(width: 10),' >> lib/screens/home_screen.dart
+          echo '            Text("HOOKBAITS", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),' >> lib/screens/home_screen.dart
+          echo '          ],' >> lib/screens/home_screen.dart
+          echo '        ),' >> lib/screens/home_screen.dart
+          echo '        backgroundColor: Color(0xFFE31E24),' >> lib/screens/home_screen.dart
+          echo '        elevation: 0,' >> lib/screens/home_screen.dart
+          echo '      ),' >> lib/screens/home_screen.dart
+          echo '      body: loading' >> lib/screens/home_screen.dart
+          echo '        ? Center(child: CircularProgressIndicator(color: Color(0xFFE31E24)))' >> lib/screens/home_screen.dart
+          echo '        : GridView.builder(' >> lib/screens/home_screen.dart
+          echo '            padding: EdgeInsets.all(16),' >> lib/screens/home_screen.dart
+          echo '            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(' >> lib/screens/home_screen.dart
+          echo '              crossAxisCount: 2,' >> lib/screens/home_screen.dart
+          echo '              childAspectRatio: 0.65,' >> lib/screens/home_screen.dart
+          echo '              crossAxisSpacing: 12,' >> lib/screens/home_screen.dart
+          echo '              mainAxisSpacing: 16,' >> lib/screens/home_screen.dart
+          echo '            ),' >> lib/screens/home_screen.dart
+          echo '            itemCount: products.length,' >> lib/screens/home_screen.dart
+          echo '            itemBuilder: (context, index) {' >> lib/screens/home_screen.dart
+          echo '              final product = products[index];' >> lib/screens/home_screen.dart
+          echo '              return Card(' >> lib/screens/home_screen.dart
+          echo '                child: Column(' >> lib/screens/home_screen.dart
+          echo '                  crossAxisAlignment: CrossAxisAlignment.start,' >> lib/screens/home_screen.dart
+          echo '                  children: [' >> lib/screens/home_screen.dart
+          echo '                    Expanded(' >> lib/screens/home_screen.dart
+          echo '                      flex: 3,' >> lib/screens/home_screen.dart
+          echo '                      child: product["images"] != null && product["images"].isNotEmpty' >> lib/screens/home_screen.dart
+          echo '                        ? Image.network(product["images"][0]["src"], fit: BoxFit.cover, width: double.infinity)' >> lib/screens/home_screen.dart
+          echo '                        : Container(color: Colors.grey[100], child: Icon(Icons.image)),' >> lib/screens/home_screen.dart
+          echo '                    ),' >> lib/screens/home_screen.dart
+          echo '                    Expanded(' >> lib/screens/home_screen.dart
+          echo '                      flex: 2,' >> lib/screens/home_screen.dart
+          echo '                      child: Padding(' >> lib/screens/home_screen.dart
+          echo '                        padding: EdgeInsets.all(8),' >> lib/screens/home_screen.dart
+          echo '                        child: Column(' >> lib/screens/home_screen.dart
+          echo '                          crossAxisAlignment: CrossAxisAlignment.start,' >> lib/screens/home_screen.dart
+          echo '                          children: [' >> lib/screens/home_screen.dart
+          echo '                            Text(product["name"] ?? "Produs", style: TextStyle(fontWeight: FontWeight.bold), maxLines: 2),' >> lib/screens/home_screen.dart
+          echo '                            SizedBox(height: 4),' >> lib/screens/home_screen.dart
+          echo '                            Text("${product["price"] ?? "0"} RON", style: TextStyle(color: Color(0xFFE31E24), fontWeight: FontWeight.bold)),' >> lib/screens/home_screen.dart
+          echo '                            Spacer(),' >> lib/screens/home_screen.dart
+          echo '                            ElevatedButton(' >> lib/screens/home_screen.dart
+          echo '                              onPressed: () {' >> lib/screens/home_screen.dart
+          echo '                                Provider.of<CartState>(context, listen: false).add(product);' >> lib/screens/home_screen.dart
+          echo '                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Produs adăugat")));' >> lib/screens/home_screen.dart
+          echo '                              },' >> lib/screens/home_screen.dart
+          echo '                              style: ElevatedButton.styleFrom(backgroundColor: Color(0xFFE31E24)),' >> lib/screens/home_screen.dart
+          echo '                              child: Text("ADAUGĂ", style: TextStyle(color: Colors.white, fontSize: 12)),' >> lib/screens/home_screen.dart
+          echo '                            ),' >> lib/screens/home_screen.dart
+          echo '                          ],' >> lib/screens/home_screen.dart
+          echo '                        ),' >> lib/screens/home_screen.dart
+          echo '                      ),' >> lib/screens/home_screen.dart
+          echo '                    ),' >> lib/screens/home_screen.dart
+          echo '                  ],' >> lib/screens/home_screen.dart
+          echo '                ),' >> lib/screens/home_screen.dart
+          echo '              );' >> lib/screens/home_screen.dart
+          echo '            },' >> lib/screens/home_screen.dart
+          echo '          ),' >> lib/screens/home_screen.dart
+          echo '    );' >> lib/screens/home_screen.dart
+          echo '  }' >> lib/screens/home_screen.dart
+          echo '}' >> lib/screens/home_screen.dart
           
-          cat > lib/screens/cart_screen.dart << 'EOF'
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../state/cart_state.dart';
-
-class CartScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text('COȘUL MEU', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Color(0xFFE31E24),
-        elevation: 0,
-      ),
-      body: Consumer<CartState>(
-        builder: (context, cart, child) {
-          if (cart.items.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.shopping_cart_outlined, size: 100, color: Colors.grey[400]),
-                  SizedBox(height: 24),
-                  Text('Coșul este gol', style: TextStyle(fontSize: 20, color: Colors.grey[600])),
-                  SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(backgroundColor: Color(0xFFE31E24)),
-                    child: Text('CONTINUĂ CUMPĂRĂTURILE', style: TextStyle(color: Colors.white)),
-                  ),
-                ],
-              ),
-            );
-          }
+          echo 'import "package:flutter/material.dart";' > lib/screens/cart_screen.dart
+          echo 'import "package:provider/provider.dart";' >> lib/screens/cart_screen.dart
+          echo 'import "../state/cart_state.dart";' >> lib/screens/cart_screen.dart
+          echo '' >> lib/screens/cart_screen.dart
+          echo 'class CartScreen extends StatelessWidget {' >> lib/screens/cart_screen.dart
+          echo '  @override' >> lib/screens/cart_screen.dart
+          echo '  Widget build(BuildContext context) {' >> lib/screens/cart_screen.dart
+          echo '    return Scaffold(' >> lib/screens/cart_screen.dart
+          echo '      backgroundColor: Colors.white,' >> lib/screens/cart_screen.dart
+          echo '      appBar: AppBar(' >> lib/screens/cart_screen.dart
+          echo '        title: Text("COȘUL MEU", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),' >> lib/screens/cart_screen.dart
+          echo '        backgroundColor: Color(0xFFE31E24),' >> lib/screens/cart_screen.dart
+          echo '        elevation: 0,' >> lib/screens/cart_screen.dart
+          echo '      ),' >> lib/screens/cart_screen.dart
+          echo '      body: Consumer<CartState>(' >> lib/screens/cart_screen.dart
+          echo '        builder: (context, cart, child) {' >> lib/screens/cart_screen.dart
+          echo '          if (cart.items.isEmpty) {' >> lib/screens/cart_screen.dart
+          echo '            return Center(' >> lib/screens/cart_screen.dart
+          echo '              child: Column(' >> lib/screens/cart_screen.dart
+          echo '                mainAxisAlignment: MainAxisAlignment.center,' >> lib/screens/cart_screen.dart
+          echo '                children: [' >> lib/screens/cart_screen.dart
+          echo '                  Icon(Icons.shopping_cart_outlined, size: 100, color: Colors.grey[400]),' >> lib/screens/cart_screen.dart
+          echo '                  SizedBox(height: 24),' >> lib/screens/cart_screen.dart
+          echo '                  Text("Coșul este gol", style: TextStyle(fontSize: 20, color: Colors.grey[600])),' >> lib/screens/cart_screen.dart
+          echo '                ],' >> lib/screens/cart_screen.dart
+          echo '              ),' >> lib/screens/cart_screen.dart
+          echo '            );' >> lib/screens/cart_screen.dart
+          echo '          }' >> lib/screens/cart_screen.dart
+          echo '          return ListView.builder(' >> lib/screens/cart_screen.dart
+          echo '            itemCount: cart.items.length,' >> lib/screens/cart_screen.dart
+          echo '            itemBuilder: (context, index) {' >> lib/screens/cart_screen.dart
+          echo '              final item = cart.items[index];' >> lib/screens/cart_screen.dart
+          echo '              return Card(' >> lib/screens/cart_screen.dart
+          echo '                margin: EdgeInsets.all(8),' >> lib/screens/cart_screen.dart
+          echo '                child: ListTile(' >> lib/screens/cart_screen.dart
+          echo '                  leading: item["images"] != null && item["images"].isNotEmpty' >> lib/screens/cart_screen.dart
+          echo '                    ? Image.network(item["images"][0]["src"], width: 50, height: 50, fit: BoxFit.cover)' >> lib/screens/cart_screen.dart
+          echo '                    : Icon(Icons.image),' >> lib/screens/cart_screen.dart
+          echo '                  title: Text(item["name"] ?? "Produs"),' >> lib/screens/cart_screen.dart
+          echo '                  subtitle: Text("${item["price"] ?? "0"} RON"),' >> lib/screens/cart_screen.dart
+          echo '                  trailing: IconButton(' >> lib/screens/cart_screen.dart
+          echo '                    icon: Icon(Icons.delete, color: Colors.red),' >> lib/screens/cart_screen.dart
+          echo '                    onPressed: () => cart.remove(index),' >> lib/screens/cart_screen.dart
+          echo '                  ),' >> lib/screens/cart_screen.dart
+          echo '                ),' >> lib/screens/cart_screen.dart
+          echo '              );' >> lib/screens/cart_screen.dart
+          echo '            },' >> lib/screens/cart_screen.dart
+          echo '          );' >> lib/screens/cart_screen.dart
+          echo '        },' >> lib/screens/cart_screen.dart
+          echo '      ),' >> lib/screens/cart_screen.dart
+          echo '    );' >> lib/screens/cart_screen.dart
+          echo '  }' >> lib/screens/cart_screen.dart
+          echo '}' >> lib/screens/cart_screen.dart
           
-          return Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: cart.items.length,
-                  itemBuilder: (context, index) {
-                    final item = cart.items[index];
-                    return Card(
-                      margin: EdgeInsets.all(8),
-                      child: ListTile(
-                        leading: item['images'] != null && item['images'].isNotEmpty
-                          ? Image.network(item['images'][0]['src'], width: 50, height: 50, fit: BoxFit.cover)
-                          : Icon(Icons.image),
-                        title: Text(item['name'] ?? 'Produs'),
-                        subtitle: Text('${item['price'] ?? '0'} RON'),
-                        trailing: IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => cart.remove(index),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 5)],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('TOTAL:', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                        Text('${cart.total.toStringAsFixed(2)} RON', 
-                             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFE31E24))),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                    Container(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Funcționalitate în dezvoltare')),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFFE31E24),
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        child: Text('FINALIZEAZĂ COMANDA', style: TextStyle(color: Colors.white, fontSize: 16)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-EOF
-          
-          cat > lib/screens/account_screen.dart << 'EOF'
-import 'package:flutter/material.dart';
-
-class AccountScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text('CONTUL MEU', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Color(0xFFE31E24),
-        elevation: 0,
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(16),
-        children: [
-          Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Color(0xFFE31E24),
-                  child: Icon(Icons.person, color: Colors.white, size: 30),
-                ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Conectează-te', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text('Pentru a accesa contul tău', style: TextStyle(color: Colors.grey[600])),
-                    ],
-                  ),
-                ),
-                Icon(Icons.arrow_forward_ios, color: Colors.grey[400]),
-              ],
-            ),
-          ),
-          SizedBox(height: 24),
-          Card(
-            child: Column(
-              children: [
-                ListTile(
-                  leading: Icon(Icons.history, color: Color(0xFFE31E24)),
-                  title: Text('Comenzile mele'),
-                  subtitle: Text('Vezi istoricul comenzilor'),
-                  trailing: Icon(Icons.arrow_forward_ios),
-                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Funcționalitate în dezvoltare')),
-                  ),
-                ),
-                Divider(),
-                ListTile(
-                  leading: Icon(Icons.favorite, color: Color(0xFFE31E24)),
-                  title: Text('Produse favorite'),
-                  subtitle: Text('Lista dorințelor'),
-                  trailing: Icon(Icons.arrow_forward_ios),
-                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Funcționalitate în dezvoltare')),
-                  ),
-                ),
-                Divider(),
-                ListTile(
-                  leading: Icon(Icons.help_outline, color: Color(0xFFE31E24)),
-                  title: Text('Ajutor și suport'),
-                  subtitle: Text('contact@hookbaits.ro'),
-                  trailing: Icon(Icons.arrow_forward_ios),
-                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Pentru suport: contact@hookbaits.ro')),
-                  ),
-                ),
-                Divider(),
-                ListTile(
-                  leading: Icon(Icons.info_outline, color: Color(0xFFE31E24)),
-                  title: Text('Despre aplicație'),
-                  subtitle: Text('Versiunea 1.0.0'),
-                  trailing: Icon(Icons.arrow_forward_ios),
-                  onTap: () => showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: Row(
-                        children: [
-                          Icon(Icons.anchor, color: Color(0xFFE31E24)),
-                          SizedBox(width: 12),
-                          Text('Hookbaits'),
-                        ],
-                      ),
-                      content: Text('Aplicația oficială Hookbaits pentru comenzi online de produse de pescuit premium.\n\nVersiunea: 1.0.0\nDezvoltată pentru: hookbaits.ro'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text('OK', style: TextStyle(color: Color(0xFFE31E24))),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-EOF
+          echo 'import "package:flutter/material.dart";' > lib/screens/account_screen.dart
+          echo '' >> lib/screens/account_screen.dart
+          echo 'class AccountScreen extends StatelessWidget {' >> lib/screens/account_screen.dart
+          echo '  @override' >> lib/screens/account_screen.dart
+          echo '  Widget build(BuildContext context) {' >> lib/screens/account_screen.dart
+          echo '    return Scaffold(' >> lib/screens/account_screen.dart
+          echo '      backgroundColor: Colors.white,' >> lib/screens/account_screen.dart
+          echo '      appBar: AppBar(' >> lib/screens/account_screen.dart
+          echo '        title: Text("CONTUL MEU", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),' >> lib/screens/account_screen.dart
+          echo '        backgroundColor: Color(0xFFE31E24),' >> lib/screens/account_screen.dart
+          echo '        elevation: 0,' >> lib/screens/account_screen.dart
+          echo '      ),' >> lib/screens/account_screen.dart
+          echo '      body: ListView(' >> lib/screens/account_screen.dart
+          echo '        padding: EdgeInsets.all(16),' >> lib/screens/account_screen.dart
+          echo '        children: [' >> lib/screens/account_screen.dart
+          echo '          Container(' >> lib/screens/account_screen.dart
+          echo '            padding: EdgeInsets.all(20),' >> lib/screens/account_screen.dart
+          echo '            decoration: BoxDecoration(' >> lib/screens/account_screen.dart
+          echo '              color: Colors.grey[50],' >> lib/screens/account_screen.dart
+          echo '              borderRadius: BorderRadius.circular(12),' >> lib/screens/account_screen.dart
+          echo '            ),' >> lib/screens/account_screen.dart
+          echo '            child: Row(' >> lib/screens/account_screen.dart
+          echo '              children: [' >> lib/screens/account_screen.dart
+          echo '                CircleAvatar(' >> lib/screens/account_screen.dart
+          echo '                  radius: 30,' >> lib/screens/account_screen.dart
+          echo '                  backgroundColor: Color(0xFFE31E24),' >> lib/screens/account_screen.dart
+          echo '                  child: Icon(Icons.person, color: Colors.white, size: 30),' >> lib/screens/account_screen.dart
+          echo '                ),' >> lib/screens/account_screen.dart
+          echo '                SizedBox(width: 16),' >> lib/screens/account_screen.dart
+          echo '                Expanded(' >> lib/screens/account_screen.dart
+          echo '                  child: Column(' >> lib/screens/account_screen.dart
+          echo '                    crossAxisAlignment: CrossAxisAlignment.start,' >> lib/screens/account_screen.dart
+          echo '                    children: [' >> lib/screens/account_screen.dart
+          echo '                      Text("Conectează-te", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),' >> lib/screens/account_screen.dart
+          echo '                      Text("Pentru a accesa contul tău", style: TextStyle(color: Colors.grey[600])),' >> lib/screens/account_screen.dart
+          echo '                    ],' >> lib/screens/account_screen.dart
+          echo '                  ),' >> lib/screens/account_screen.dart
+          echo '                ),' >> lib/screens/account_screen.dart
+          echo '                Icon(Icons.arrow_forward_ios, color: Colors.grey[400]),' >> lib/screens/account_screen.dart
+          echo '              ],' >> lib/screens/account_screen.dart
+          echo '            ),' >> lib/screens/account_screen.dart
+          echo '          ),' >> lib/screens/account_screen.dart
+          echo '          SizedBox(height: 24),' >> lib/screens/account_screen.dart
+          echo '          Card(' >> lib/screens/account_screen.dart
+          echo '            child: Column(' >> lib/screens/account_screen.dart
+          echo '              children: [' >> lib/screens/account_screen.dart
+          echo '                ListTile(' >> lib/screens/account_screen.dart
+          echo '                  leading: Icon(Icons.history, color: Color(0xFFE31E24)),' >> lib/screens/account_screen.dart
+          echo '                  title: Text("Comenzile mele"),' >> lib/screens/account_screen.dart
+          echo '                  subtitle: Text("Vezi istoricul comenzilor"),' >> lib/screens/account_screen.dart
+          echo '                  trailing: Icon(Icons.arrow_forward_ios),' >> lib/screens/account_screen.dart
+          echo '                ),' >> lib/screens/account_screen.dart
+          echo '                Divider(),' >> lib/screens/account_screen.dart
+          echo '                ListTile(' >> lib/screens/account_screen.dart
+          echo '                  leading: Icon(Icons.favorite, color: Color(0xFFE31E24)),' >> lib/screens/account_screen.dart
+          echo '                  title: Text("Produse favorite"),' >> lib/screens/account_screen.dart
+          echo '                  subtitle: Text("Lista dorințelor"),' >> lib/screens/account_screen.dart
+          echo '                  trailing: Icon(Icons.arrow_forward_ios),' >> lib/screens/account_screen.dart
+          echo '                ),' >> lib/screens/account_screen.dart
+          echo '                Divider(),' >> lib/screens/account_screen.dart
+          echo '                ListTile(' >> lib/screens/account_screen.dart
+          echo '                  leading: Icon(Icons.help_outline, color: Color(0xFFE31E24)),' >> lib/screens/account_screen.dart
+          echo '                  title: Text("Ajutor și suport"),' >> lib/screens/account_screen.dart
+          echo '                  subtitle: Text("contact@hookbaits.ro"),' >> lib/screens/account_screen.dart
+          echo '                  trailing: Icon(Icons.arrow_forward_ios),' >> lib/screens/account_screen.dart
+          echo '                ),' >> lib/screens/account_screen.dart
+          echo '              ],' >> lib/screens/account_screen.dart
+          echo '            ),' >> lib/screens/account_screen.dart
+          echo '          ),' >> lib/screens/account_screen.dart
+          echo '        ],' >> lib/screens/account_screen.dart
+          echo '      ),' >> lib/screens/account_screen.dart
+          echo '    );' >> lib/screens/account_screen.dart
+          echo '  }' >> lib/screens/account_screen.dart
+          echo '}' >> lib/screens/account_screen.dart
 
       - name: Copy app icon
         run: |
