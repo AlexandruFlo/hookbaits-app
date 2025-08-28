@@ -1,0 +1,63 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+
+      - name: Flutter doctor
+        run: flutter doctor -v | sed -n '1,120p'
+
+      - name: Prepare project
+        working-directory: public_html/mobile_app
+        run: |
+          flutter --version
+          flutter pub get
+          # Scaffold missing android folder if not present
+          if [ ! -d android ]; then flutter create . --platforms=android; fi
+          flutter pub get
+          # Prepare app icon if a LOGO_URL is provided
+          if [ -f assets/icon.png ]; then \
+            echo "Using local assets/icon.png"; \
+          elif [ -n "${{ secrets.LOGO_URL }}" ]; then \
+            mkdir -p assets && \
+            curl -L "${{ secrets.LOGO_URL }}" -o assets/icon.png; \
+          else \
+            # fallback simple placeholder
+            mkdir -p assets && \
+            convert -size 1024x1024 xc:#0A7F2E -gravity center -pointsize 200 -fill white -font DejaVu-Sans -draw "text 0,0 'H'" assets/icon.png; \
+          fi
+          flutter pub run flutter_launcher_icons
+
+      - name: Build APK (release)
+        working-directory: public_html/mobile_app
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+        run: |
+          if [ -z "$BASE_URL" ]; then BASE_URL=https://hookbaits.ro; fi
+          flutter build apk --release --dart-define=BASE_URL=$BASE_URL
+
+      - name: Upload Artifact APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: hookbaits-apk
+          path: public_html/mobile_app/build/app/outputs/flutter-apk/app-release.apk
+
