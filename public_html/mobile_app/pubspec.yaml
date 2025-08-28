@@ -1,0 +1,34 @@
+name: hookbaits_shop
+description: Aplicatie Android pentru magazinul Hookbaits (catalog, cos, checkout webview)
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  provider: ^6.0.5
+  cached_network_image: ^3.3.1
+  webview_flutter: ^4.7.0
+
+dev_dependencies:
+  flutter_lints: ^3.0.1
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icon.png
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/icon.png
+  adaptive_icon_background: "#0A7F2E"
+  adaptive_icon_foreground: assets/icon.png
+
