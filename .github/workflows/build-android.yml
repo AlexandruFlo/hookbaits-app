@@ -25,125 +25,653 @@ jobs:
           flutter-version: '3.22.2'
 
       - name: Create Flutter project
-        working-directory: public_html
         run: |
           flutter create mobile_app --org com.hookbaits --project-name hookbaits_shop --platforms=android
           cd mobile_app
           flutter pub add http webview_flutter provider cached_network_image shared_preferences
 
-      - name: Create main.dart
-        working-directory: public_html/mobile_app
+      - name: Create complete app
+        working-directory: mobile_app
         run: |
-          echo 'import "package:flutter/material.dart";' > lib/main.dart
-          echo 'import "package:provider/provider.dart";' >> lib/main.dart
-          echo 'import "screens/home_screen.dart";' >> lib/main.dart
-          echo 'import "state/cart.dart";' >> lib/main.dart
-          echo '' >> lib/main.dart
-          echo 'void main() { runApp(MyApp()); }' >> lib/main.dart
-          echo '' >> lib/main.dart
-          echo 'class MyApp extends StatelessWidget {' >> lib/main.dart
-          echo '  @override' >> lib/main.dart
-          echo '  Widget build(BuildContext context) {' >> lib/main.dart
-          echo '    return ChangeNotifierProvider(' >> lib/main.dart
-          echo '      create: (context) => CartState(),' >> lib/main.dart
-          echo '      child: MaterialApp(' >> lib/main.dart
-          echo '        title: "Hookbaits",' >> lib/main.dart
-          echo '        theme: ThemeData(primarySwatch: Colors.blue),' >> lib/main.dart
-          echo '        home: HomeScreen(),' >> lib/main.dart
-          echo '      ),' >> lib/main.dart
-          echo '    );' >> lib/main.dart
-          echo '  }' >> lib/main.dart
-          echo '}' >> lib/main.dart
+          # Main app
+          cat > lib/main.dart << 'EOF'
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'screens/main_navigation.dart';
+import 'state/cart_state.dart';
 
-      - name: Create config.dart
-        working-directory: public_html/mobile_app
-        run: |
-          echo 'class Config {' > lib/config.dart
-          echo '  static const String baseUrl = String.fromEnvironment("BASE_URL", defaultValue: "https://hookbaits.ro");' >> lib/config.dart
-          echo '}' >> lib/config.dart
+void main() {
+  runApp(MyApp());
+}
 
-      - name: Create cart state
-        working-directory: public_html/mobile_app
-        run: |
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (context) => CartState(),
+      child: MaterialApp(
+        title: 'Hookbaits',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: MainNavigationScreen(),
+      ),
+    );
+  }
+}
+EOF
+
+          # Config
+          cat > lib/config.dart << 'EOF'
+class Config {
+  static const String baseUrl = String.fromEnvironment('BASE_URL', defaultValue: 'https://hookbaits.ro');
+}
+EOF
+
+          # Cart state
           mkdir -p lib/state
-          echo 'import "package:flutter/foundation.dart";' > lib/state/cart.dart
-          echo '' >> lib/state/cart.dart
-          echo 'class CartState extends ChangeNotifier {' >> lib/state/cart.dart
-          echo '  final List<CartItem> _items = [];' >> lib/state/cart.dart
-          echo '  List<CartItem> get items => List.unmodifiable(_items);' >> lib/state/cart.dart
-          echo '  void addItem(Map<String, dynamic> product) { notifyListeners(); }' >> lib/state/cart.dart
-          echo '  void removeItem(int id) { notifyListeners(); }' >> lib/state/cart.dart
-          echo '  double get total => 0.0;' >> lib/state/cart.dart
-          echo '}' >> lib/state/cart.dart
-          echo '' >> lib/state/cart.dart
-          echo 'class CartItem {' >> lib/state/cart.dart
-          echo '  final int id; final String name; final double price; final String image; int quantity;' >> lib/state/cart.dart
-          echo '  CartItem({required this.id, required this.name, required this.price, required this.image, required this.quantity});' >> lib/state/cart.dart
-          echo '}' >> lib/state/cart.dart
+          cat > lib/state/cart_state.dart << 'EOF'
+import 'package:flutter/foundation.dart';
 
-      - name: Create home screen
-        working-directory: public_html/mobile_app
-        run: |
+class CartState extends ChangeNotifier {
+  final List<CartItem> _items = [];
+  
+  List<CartItem> get items => List.unmodifiable(_items);
+  double get total => _items.fold(0, (sum, item) => sum + (item.price * item.quantity));
+  int get itemCount => _items.fold(0, (sum, item) => sum + item.quantity);
+  
+  void addItem(Map<String, dynamic> product) {
+    if (product['images'] == null || product['images'].isEmpty) return;
+    
+    final existingIndex = _items.indexWhere((item) => item.id == product['id']);
+    if (existingIndex >= 0) {
+      _items[existingIndex].quantity++;
+    } else {
+      _items.add(CartItem(
+        id: product['id'],
+        name: product['name'],
+        price: double.tryParse(product['price'].toString()) ?? 0.0,
+        image: product['images'][0]['src'],
+        quantity: 1,
+      ));
+    }
+    notifyListeners();
+  }
+  
+  void removeItem(int id) {
+    _items.removeWhere((item) => item.id == id);
+    notifyListeners();
+  }
+  
+  void clearCart() {
+    _items.clear();
+    notifyListeners();
+  }
+}
+
+class CartItem {
+  final int id;
+  final String name;
+  final double price;
+  final String image;
+  int quantity;
+  
+  CartItem({
+    required this.id,
+    required this.name,
+    required this.price,
+    required this.image,
+    required this.quantity,
+  });
+}
+EOF
+
+          # Main navigation
           mkdir -p lib/screens
-          echo 'import "package:flutter/material.dart";' > lib/screens/home_screen.dart
-          echo 'import "product_list_screen.dart";' >> lib/screens/home_screen.dart
-          echo '' >> lib/screens/home_screen.dart
-          echo 'class HomeScreen extends StatelessWidget {' >> lib/screens/home_screen.dart
-          echo '  @override' >> lib/screens/home_screen.dart
-          echo '  Widget build(BuildContext context) {' >> lib/screens/home_screen.dart
-          echo '    return Scaffold(' >> lib/screens/home_screen.dart
-          echo '      appBar: AppBar(title: Text("Hookbaits")),' >> lib/screens/home_screen.dart
-          echo '      body: ProductListScreen(),' >> lib/screens/home_screen.dart
-          echo '    );' >> lib/screens/home_screen.dart
-          echo '  }' >> lib/screens/home_screen.dart
-          echo '}' >> lib/screens/home_screen.dart
+          cat > lib/screens/main_navigation.dart << 'EOF'
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../state/cart_state.dart';
+import 'home_screen.dart';
+import 'categories_screen.dart';
+import 'cart_screen.dart';
+import 'account_screen.dart';
 
-      - name: Create product list screen
-        working-directory: public_html/mobile_app
+class MainNavigationScreen extends StatefulWidget {
+  @override
+  _MainNavigationScreenState createState() => _MainNavigationScreenState();
+}
+
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
+  int _currentIndex = 0;
+  
+  final List<Widget> _screens = [
+    HomeScreen(),
+    CategoriesScreen(),
+    CartScreen(),
+    AccountScreen(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _screens[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        type: BottomNavigationBarType.fixed,
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Acasă'),
+          BottomNavigationBarItem(icon: Icon(Icons.category), label: 'Categorii'),
+          BottomNavigationBarItem(
+            icon: Stack(
+              children: [
+                Icon(Icons.shopping_cart),
+                Consumer<CartState>(
+                  builder: (context, cart, child) {
+                    if (cart.itemCount > 0) {
+                      return Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          constraints: BoxConstraints(minWidth: 16, minHeight: 16),
+                          child: Text(
+                            cart.itemCount.toString(),
+                            style: TextStyle(color: Colors.white, fontSize: 10),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    }
+                    return SizedBox();
+                  },
+                ),
+              ],
+            ),
+            label: 'Coș',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Cont'),
+        ],
+      ),
+    );
+  }
+}
+EOF
+
+          # Home screen
+          cat > lib/screens/home_screen.dart << 'EOF'
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:provider/provider.dart';
+import '../state/cart_state.dart';
+import '../config.dart';
+import 'product_detail_screen.dart';
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<dynamic> products = [];
+  bool isLoading = true;
+  String searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${Config.baseUrl}/wp-json/wc/v3/products?per_page=50'),
+      );
+      
+      if (response.statusCode == 200) {
+        setState(() {
+          products = json.decode(response.body);
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+    }
+  }
+
+  List<dynamic> get filteredProducts {
+    if (searchQuery.isEmpty) return products;
+    return products.where((product) =>
+      product['name'].toString().toLowerCase().contains(searchQuery.toLowerCase())
+    ).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Hookbaits'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Caută produse...',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) => setState(() => searchQuery = value),
+            ),
+          ),
+          Expanded(
+            child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : GridView.builder(
+                    padding: EdgeInsets.all(16),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.75,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                    ),
+                    itemCount: filteredProducts.length,
+                    itemBuilder: (context, index) {
+                      final product = filteredProducts[index];
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProductDetailScreen(product: product),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          elevation: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  width: double.infinity,
+                                  child: product['images'] != null && product['images'].isNotEmpty
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
+                                          child: Image.network(
+                                            product['images'][0]['src'],
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return Container(
+                                                color: Colors.grey[300],
+                                                child: Icon(Icons.image, size: 50),
+                                              );
+                                            },
+                                          ),
+                                        )
+                                      : Container(
+                                          color: Colors.grey[300],
+                                          child: Icon(Icons.image, size: 50),
+                                        ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      product['name'] ?? 'Produs',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      '${product['price'] ?? '0'} RON',
+                                      style: TextStyle(
+                                        color: Colors.blue,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          context.read<CartState>().addItem(product);
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Produs adăugat în coș')),
+                                          );
+                                        },
+                                        child: Text('Adaugă'),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+EOF
+
+      - name: Create remaining screens
+        working-directory: mobile_app
         run: |
-          echo 'import "package:flutter/material.dart";' > lib/screens/product_list_screen.dart
-          echo 'import "package:http/http.dart" as http;' >> lib/screens/product_list_screen.dart
-          echo 'import "dart:convert";' >> lib/screens/product_list_screen.dart
-          echo 'import "../config.dart";' >> lib/screens/product_list_screen.dart
-          echo '' >> lib/screens/product_list_screen.dart
-          echo 'class ProductListScreen extends StatefulWidget {' >> lib/screens/product_list_screen.dart
-          echo '  @override' >> lib/screens/product_list_screen.dart
-          echo '  _ProductListScreenState createState() => _ProductListScreenState();' >> lib/screens/product_list_screen.dart
-          echo '}' >> lib/screens/product_list_screen.dart
-          echo '' >> lib/screens/product_list_screen.dart
-          echo 'class _ProductListScreenState extends State<ProductListScreen> {' >> lib/screens/product_list_screen.dart
-          echo '  List<dynamic> products = [];' >> lib/screens/product_list_screen.dart
-          echo '  bool isLoading = true;' >> lib/screens/product_list_screen.dart
-          echo '' >> lib/screens/product_list_screen.dart
-          echo '  @override' >> lib/screens/product_list_screen.dart
-          echo '  void initState() { super.initState(); _loadProducts(); }' >> lib/screens/product_list_screen.dart
-          echo '' >> lib/screens/product_list_screen.dart
-          echo '  Future<void> _loadProducts() async {' >> lib/screens/product_list_screen.dart
-          echo '    try {' >> lib/screens/product_list_screen.dart
-          echo '      final response = await http.get(Uri.parse("${Config.baseUrl}/wp-json/wc/v3/products"));' >> lib/screens/product_list_screen.dart
-          echo '      if (response.statusCode == 200) {' >> lib/screens/product_list_screen.dart
-          echo '        setState(() { products = json.decode(response.body); isLoading = false; });' >> lib/screens/product_list_screen.dart
-          echo '      }' >> lib/screens/product_list_screen.dart
-          echo '    } catch (e) { setState(() => isLoading = false); }' >> lib/screens/product_list_screen.dart
-          echo '  }' >> lib/screens/product_list_screen.dart
-          echo '' >> lib/screens/product_list_screen.dart
-          echo '  @override' >> lib/screens/product_list_screen.dart
-          echo '  Widget build(BuildContext context) {' >> lib/screens/product_list_screen.dart
-          echo '    if (isLoading) return Center(child: CircularProgressIndicator());' >> lib/screens/product_list_screen.dart
-          echo '    return GridView.builder(' >> lib/screens/product_list_screen.dart
-          echo '      padding: EdgeInsets.all(16),' >> lib/screens/product_list_screen.dart
-          echo '      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),' >> lib/screens/product_list_screen.dart
-          echo '      itemCount: products.length,' >> lib/screens/product_list_screen.dart
-          echo '      itemBuilder: (context, index) {' >> lib/screens/product_list_screen.dart
-          echo '        final product = products[index];' >> lib/screens/product_list_screen.dart
-          echo '        return Card(child: ListTile(title: Text(product["name"]), subtitle: Text(product["price"])));' >> lib/screens/product_list_screen.dart
-          echo '      },' >> lib/screens/product_list_screen.dart
-          echo '    );' >> lib/screens/product_list_screen.dart
-          echo '  }' >> lib/screens/product_list_screen.dart
-          echo '}' >> lib/screens/product_list_screen.dart
+          # Product detail screen
+          cat > lib/screens/product_detail_screen.dart << 'EOF'
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../state/cart_state.dart';
+import 'checkout_screen.dart';
+
+class ProductDetailScreen extends StatelessWidget {
+  final Map<String, dynamic> product;
+
+  ProductDetailScreen({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(product['name'] ?? 'Produs'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (product['images'] != null && product['images'].isNotEmpty)
+              Container(
+                height: 300,
+                width: double.infinity,
+                child: Image.network(
+                  product['images'][0]['src'],
+                  fit: BoxFit.cover,
+                ),
+              ),
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product['name'] ?? 'Produs',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    '${product['price'] ?? '0'} RON',
+                    style: TextStyle(fontSize: 20, color: Colors.blue, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 16),
+                  if (product['description'] != null)
+                    Text(product['description']),
+                  SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        context.read<CartState>().addItem(product);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Produs adăugat în coș')),
+                        );
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Text('Adaugă în coș', style: TextStyle(fontSize: 18)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+EOF
+
+          # Categories screen
+          cat > lib/screens/categories_screen.dart << 'EOF'
+import 'package:flutter/material.dart';
+
+class CategoriesScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Categorii'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+      body: Center(
+        child: Text('Categorii de produse'),
+      ),
+    );
+  }
+}
+EOF
+
+          # Cart screen
+          cat > lib/screens/cart_screen.dart << 'EOF'
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../state/cart_state.dart';
+
+class CartScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Coșul meu'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+      body: Consumer<CartState>(
+        builder: (context, cart, child) {
+          if (cart.items.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.shopping_cart_outlined, size: 64, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text('Coșul este gol', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                ],
+              ),
+            );
+          }
+
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: cart.items.length,
+                  itemBuilder: (context, index) {
+                    final item = cart.items[index];
+                    return Card(
+                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: ListTile(
+                        leading: Container(
+                          width: 50,
+                          height: 50,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: Image.network(item.image, fit: BoxFit.cover),
+                          ),
+                        ),
+                        title: Text(item.name),
+                        subtitle: Text('${item.price} RON x ${item.quantity}'),
+                        trailing: IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => cart.removeItem(item.id),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Total:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('${cart.total.toStringAsFixed(2)} RON', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Checkout action
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Text('Finalizează comanda', style: TextStyle(fontSize: 18)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+EOF
+
+          # Account screen
+          cat > lib/screens/account_screen.dart << 'EOF'
+import 'package:flutter/material.dart';
+
+class AccountScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Contul meu'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Card(
+              child: ListTile(
+                leading: Icon(Icons.person),
+                title: Text('Bună, utilizator'),
+                subtitle: Text('Conectează-te pentru a vedea comenzile'),
+              ),
+            ),
+            SizedBox(height: 16),
+            ListTile(
+              leading: Icon(Icons.shopping_bag),
+              title: Text('Comenzile mele'),
+              trailing: Icon(Icons.arrow_forward_ios),
+            ),
+            ListTile(
+              leading: Icon(Icons.favorite),
+              title: Text('Favorite'),
+              trailing: Icon(Icons.arrow_forward_ios),
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Setări'),
+              trailing: Icon(Icons.arrow_forward_ios),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+EOF
+
+          # Checkout screen
+          cat > lib/screens/checkout_screen.dart << 'EOF'
+import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import '../config.dart';
+
+class CheckoutScreen extends StatefulWidget {
+  @override
+  _CheckoutScreenState createState() => _CheckoutScreenState();
+}
+
+class _CheckoutScreenState extends State<CheckoutScreen> {
+  late WebViewController _controller;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (String url) {
+            setState(() => isLoading = false);
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse('${Config.baseUrl}/checkout'));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Finalizare comandă'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+      body: Stack(
+        children: [
+          WebViewWidget(controller: _controller),
+          if (isLoading)
+            Center(child: CircularProgressIndicator()),
+        ],
+      ),
+    );
+  }
+}
+EOF
 
       - name: Configure Android
-        working-directory: public_html/mobile_app
+        working-directory: mobile_app
         run: |
           if [ -f android/app/build.gradle ]; then
             sed -i "s/minSdkVersion [0-9]\+/minSdkVersion 21/" android/app/build.gradle
@@ -153,7 +681,7 @@ jobs:
           sed -i 's/<string name="title">.*<\/string>/<string name="title">Hookbaits<\/string>/' android/app/src/main/res/values/strings.xml
 
       - name: Build APK
-        working-directory: public_html/mobile_app
+        working-directory: mobile_app
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
         run: |
@@ -164,5 +692,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: hookbaits-apk
-          path: public_html/mobile_app/build/app/outputs/**/*.apk
+          path: mobile_app/build/app/outputs/**/*.apk
 
