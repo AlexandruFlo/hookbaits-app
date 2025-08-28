@@ -75,24 +75,16 @@ jobs:
         fi
         ls -la android/app/src/main || true
 
-    - name: Build APK (release)
-      working-directory: public_html/mobile_app
+    - name: Build APK (release) via Gradle
+      working-directory: public_html/mobile_app/android
       env:
         BASE_URL: ${{ secrets.BASE_URL }}
       run: |
         if [ -z "$BASE_URL" ]; then BASE_URL=https://hookbaits.ro; fi
-        flutter clean
-        flutter pub get
-        echo "--- Plugins and deps ---"
-        flutter pub deps --style=compact || true
-        echo "--- Search for v1 embedding markers ---"
-        grep -R "io.flutter.app.FlutterApplication\|registerWith\(" -n android || true
-        grep -R "io.flutter.app.FlutterApplication\|registerWith\(" -n .dart_tool || true
-        echo "--- Building APK ---"
-        flutter build apk -v --release --dart-define=BASE_URL=$BASE_URL
+        ./gradlew clean assembleRelease --no-daemon --stacktrace
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: hookbaits-apk
-        path: public_html/mobile_app/build/app/outputs/flutter-apk/app-release.apk
+        path: public_html/mobile_app/android/app/build/outputs/apk/release/app-release.apk
