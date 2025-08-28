@@ -37,9 +37,8 @@ jobs:
       working-directory: public_html/mobile_app
       run: |
         flutter --version
-        if [ ! -d android ]; then
-          flutter create . --platforms=android --org com.hookbaits --project-name hookbaits_shop --overwrite
-        fi
+        # Regenerate Android platform to ensure v2 embedding
+        flutter create . --platforms=android --org com.hookbaits --project-name hookbaits_shop --overwrite
         flutter pub get
         # Ensure Android SDK versions
         if [ -f android/app/build.gradle ]; then
