@@ -128,11 +128,375 @@ jobs:
           }
           EOF
           
-          echo 'import "package:flutter/material.dart"; import "package:http/http.dart" as http; import "dart:convert"; import "package:provider/provider.dart"; import "../state/cart_state.dart"; import "../config.dart"; class HomeScreen extends StatefulWidget { @override _HomeScreenState createState() => _HomeScreenState(); } class _HomeScreenState extends State<HomeScreen> { List products = []; bool loading = true; List<String> categories = ["BOILIES", "WAFTERS & POPUP", "PLANCTON", "SMART LIQUIDS", "SEMINTE PREPARATE", "FEEDER & GROUNDBAITS"]; String selectedCategory = ""; initState() { super.initState(); loadProducts(); } loadProducts() async { try { String url = "${Config.baseUrl}/wp-json/wc/v3/products?per_page=50"; if (selectedCategory.isNotEmpty) url += "&category=$selectedCategory"; final response = await http.get(Uri.parse(url)); if (response.statusCode == 200) { setState(() { products = json.decode(response.body); loading = false; }); } } catch (e) { setState(() => loading = false); } } Widget build(context) { return Scaffold( backgroundColor: Colors.white, appBar: AppBar( title: Row( children: [ Image.asset("assets/icon.png", height: 35, errorBuilder: (context, error, stackTrace) => Icon(Icons.fishing, color: Colors.white)), SizedBox(width: 10), Text("HOOKBAITS", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)), ], ), backgroundColor: Color(0xFFE31E24), elevation: 0, ), body: Column( children: [ Container( color: Colors.black, height: 60, padding: EdgeInsets.symmetric(horizontal: 16), child: ListView.builder( scrollDirection: Axis.horizontal, itemCount: categories.length + 1, itemBuilder: (context, index) { if (index == 0) { return Padding( padding: EdgeInsets.all(8), child: FilterChip( label: Text("TOATE PRODUSELE", style: TextStyle(color: selectedCategory.isEmpty ? Colors.white : Colors.grey[400], fontSize: 12, fontWeight: FontWeight.bold)), backgroundColor: selectedCategory.isEmpty ? Color(0xFFE51D20) : Colors.black, selectedColor: Color(0xFFE51D20), selected: selectedCategory.isEmpty, onSelected: (selected) { setState(() { selectedCategory = ""; loadProducts(); }); }, ), ); } String category = categories[index - 1]; return Padding( padding: EdgeInsets.all(8), child: FilterChip( label: Text(category, style: TextStyle(color: selectedCategory == category ? Colors.white : Colors.grey[400], fontSize: 12, fontWeight: FontWeight.bold)), backgroundColor: selectedCategory == category ? Color(0xFFE51D20) : Colors.black, selectedColor: Color(0xFFE51D20), selected: selectedCategory == category, onSelected: (selected) { setState(() { selectedCategory = selected ? category : ""; loadProducts(); }); }, ), ); }, ), ), Expanded( child: loading ? Center(child: CircularProgressIndicator(color: Color(0xFFE31E24))) : GridView.builder( padding: EdgeInsets.all(16), gridDelegate: SliverGridDelegateWithFixedCrossAxisCount( crossAxisCount: 2, childAspectRatio: 0.65, crossAxisSpacing: 12, mainAxisSpacing: 16, ), itemCount: products.length, itemBuilder: (context, index) { final product = products[index]; return Container( decoration: BoxDecoration( color: Colors.white, borderRadius: BorderRadius.circular(8), boxShadow: [ BoxShadow( color: Colors.grey.withOpacity(0.2), spreadRadius: 1, blurRadius: 5, offset: Offset(0, 2), ), ], ), child: Column( crossAxisAlignment: CrossAxisAlignment.start, children: [ Expanded( flex: 3, child: Container( width: double.infinity, decoration: BoxDecoration( borderRadius: BorderRadius.vertical(top: Radius.circular(8)), ), child: ClipRRect( borderRadius: BorderRadius.vertical(top: Radius.circular(8)), child: product["images"] != null && product["images"].isNotEmpty ? Image.network( product["images"][0]["src"], fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) { return Container( color: Colors.grey[100], child: Icon(Icons.image, size: 50, color: Colors.grey[400]), ); }, ) : Container( color: Colors.grey[100], child: Icon(Icons.image, size: 50, color: Colors.grey[400]), ), ), ), ), Expanded( flex: 2, child: Padding( padding: EdgeInsets.all(12), child: Column( crossAxisAlignment: CrossAxisAlignment.start, children: [ Text( product["name"] ?? "Produs", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87), maxLines: 2, overflow: TextOverflow.ellipsis, ), SizedBox(height: 6), Text( "${product["price"] ?? "0"} RON", style: TextStyle(color: Color(0xFFE31E24), fontSize: 16, fontWeight: FontWeight.bold), ), Spacer(), Container( width: double.infinity, height: 32, child: ElevatedButton( onPressed: () { Provider.of<CartState>(context, listen: false).add(product); ScaffoldMessenger.of(context).showSnackBar( SnackBar( content: Text("${product["name"]} adăugat în coș"), backgroundColor: Color(0xFFE31E24), ), ); }, style: ElevatedButton.styleFrom( backgroundColor: Color(0xFFE31E24), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)), padding: EdgeInsets.zero, ), child: Text("ADAUGĂ", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)), ), ), ], ), ), ), ], ), ); }, ), ), ], ), ); } }' > lib/screens/home_screen.dart
+          cat > lib/screens/home_screen.dart << 'EOF'
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:provider/provider.dart';
+import '../state/cart_state.dart';
+import '../config.dart';
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List products = [];
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadProducts();
+  }
+
+  loadProducts() async {
+    try {
+      final response = await http.get(Uri.parse('${Config.baseUrl}/wp-json/wc/v3/products?per_page=50'));
+      if (response.statusCode == 200) {
+        setState(() {
+          products = json.decode(response.body);
+          loading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Row(
+          children: [
+            Icon(Icons.anchor, color: Colors.white),
+            SizedBox(width: 10),
+            Text('HOOKBAITS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        backgroundColor: Color(0xFFE31E24),
+        elevation: 0,
+      ),
+      body: loading 
+        ? Center(child: CircularProgressIndicator(color: Color(0xFFE31E24)))
+        : GridView.builder(
+            padding: EdgeInsets.all(16),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.65,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 16,
+            ),
+            itemCount: products.length,
+            itemBuilder: (context, index) {
+              final product = products[index];
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 1,
+                      blurRadius: 5,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+                        child: product['images'] != null && product['images'].isNotEmpty
+                          ? Image.network(
+                              product['images'][0]['src'],
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                color: Colors.grey[100],
+                                child: Icon(Icons.image, size: 50, color: Colors.grey[400]),
+                              ),
+                            )
+                          : Container(
+                              color: Colors.grey[100],
+                              child: Icon(Icons.image, size: 50, color: Colors.grey[400]),
+                            ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Padding(
+                        padding: EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              product['name'] ?? 'Produs',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              '${product['price'] ?? '0'} RON',
+                              style: TextStyle(color: Color(0xFFE31E24), fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            Spacer(),
+                            Container(
+                              width: double.infinity,
+                              height: 32,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Provider.of<CartState>(context, listen: false).add(product);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('${product['name']} adăugat în coș'),
+                                      backgroundColor: Color(0xFFE31E24),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Color(0xFFE31E24),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                ),
+                                child: Text('ADAUGĂ', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+    );
+  }
+}
+EOF
           
-          echo 'import "package:flutter/material.dart"; import "package:provider/provider.dart"; import "../state/cart_state.dart"; import "checkout_screen.dart"; class CartScreen extends StatelessWidget { Widget build(context) { return Scaffold( backgroundColor: Colors.white, appBar: AppBar( title: Text("COȘUL MEU", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), backgroundColor: Color(0xFFE31E24), elevation: 0, ), body: Consumer<CartState>( builder: (context, cart, child) { if (cart.items.isEmpty) { return Center( child: Column( mainAxisAlignment: MainAxisAlignment.center, children: [ Icon(Icons.shopping_cart_outlined, size: 120, color: Colors.grey[400]), SizedBox(height: 24), Text("Coșul este gol", style: TextStyle(fontSize: 24, color: Colors.grey[600], fontWeight: FontWeight.bold)), SizedBox(height: 16), Text("Adăugați produse pentru a continua", style: TextStyle(fontSize: 16, color: Colors.grey[500])), SizedBox(height: 32), ElevatedButton( onPressed: () {}, style: ElevatedButton.styleFrom( backgroundColor: Color(0xFFE31E24), padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), ), child: Text("CONTINUĂ CUMPĂRĂTURILE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), ), ], ), ); } return Column( children: [ Expanded( child: ListView.builder( padding: EdgeInsets.all(16), itemCount: cart.items.length, itemBuilder: (context, index) { final item = cart.items[index]; final quantity = item["quantity"] ?? 1; return Container( margin: EdgeInsets.only(bottom: 12), decoration: BoxDecoration( color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [ BoxShadow( color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 8, offset: Offset(0, 2), ), ], ), child: Padding( padding: EdgeInsets.all(16), child: Row( children: [ ClipRRect( borderRadius: BorderRadius.circular(8), child: item["images"] != null && item["images"].isNotEmpty ? Image.network( item["images"][0]["src"], width: 80, height: 80, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => Container( width: 80, height: 80, color: Colors.grey[100], child: Icon(Icons.image, color: Colors.grey[400]), ), ) : Container( width: 80, height: 80, color: Colors.grey[100], child: Icon(Icons.image, color: Colors.grey[400]), ), ), SizedBox(width: 16), Expanded( child: Column( crossAxisAlignment: CrossAxisAlignment.start, children: [ Text( item["name"] ?? "Produs", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87), maxLines: 2, overflow: TextOverflow.ellipsis, ), SizedBox(height: 8), Text( "${item["price"] ?? "0"} RON", style: TextStyle(color: Color(0xFFE31E24), fontSize: 18, fontWeight: FontWeight.bold), ), SizedBox(height: 12), Row( children: [ Container( decoration: BoxDecoration( border: Border.all(color: Colors.grey[300]!), borderRadius: BorderRadius.circular(6), ), child: Row( children: [ IconButton( icon: Icon(Icons.remove, size: 16), onPressed: () { cart.updateQuantity(index, quantity - 1); }, padding: EdgeInsets.all(8), constraints: BoxConstraints(minWidth: 32, minHeight: 32), ), Container( padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), child: Text(quantity.toString(), style: TextStyle(fontWeight: FontWeight.bold)), ), IconButton( icon: Icon(Icons.add, size: 16), onPressed: () { cart.updateQuantity(index, quantity + 1); }, padding: EdgeInsets.all(8), constraints: BoxConstraints(minWidth: 32, minHeight: 32), ), ], ), ), Spacer(), IconButton( icon: Icon(Icons.delete_outline, color: Colors.red), onPressed: () { cart.remove(index); ScaffoldMessenger.of(context).showSnackBar( SnackBar( content: Text("Produs eliminat din coș"), backgroundColor: Color(0xFFE31E24), ), ); }, ), ], ), ], ), ), ], ), ), ); }, ), ), Container( padding: EdgeInsets.all(24), decoration: BoxDecoration( color: Colors.white, boxShadow: [ BoxShadow( color: Colors.grey.withOpacity(0.2), spreadRadius: 1, blurRadius: 10, offset: Offset(0, -2), ), ], ), child: Column( children: [ Row( mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [ Text("Subtotal:", style: TextStyle(fontSize: 16, color: Colors.grey[600])), Text("${cart.total.toStringAsFixed(2)} RON", style: TextStyle(fontSize: 16, color: Colors.grey[600])), ], ), SizedBox(height: 8), Row( mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [ Text("Livrare:", style: TextStyle(fontSize: 16, color: Colors.grey[600])), Text("15.00 RON", style: TextStyle(fontSize: 16, color: Colors.grey[600])), ], ), Divider(height: 24, thickness: 1), Row( mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [ Text("TOTAL:", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)), Text("${(cart.total + 15).toStringAsFixed(2)} RON", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFE31E24))), ], ), SizedBox(height: 20), Container( width: double.infinity, child: ElevatedButton( onPressed: () { Navigator.push( context, MaterialPageRoute(builder: (context) => CheckoutScreen()), ); }, style: ElevatedButton.styleFrom( backgroundColor: Color(0xFFE31E24), padding: EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), ), child: Text("FINALIZEAZĂ COMANDA", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)), ), ), ], ), ), ], ); }, ), ); } }' > lib/screens/cart_screen.dart
+          cat > lib/screens/cart_screen.dart << 'EOF'
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../state/cart_state.dart';
+
+class CartScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text('COȘUL MEU', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Color(0xFFE31E24),
+        elevation: 0,
+      ),
+      body: Consumer<CartState>(
+        builder: (context, cart, child) {
+          if (cart.items.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.shopping_cart_outlined, size: 100, color: Colors.grey[400]),
+                  SizedBox(height: 24),
+                  Text('Coșul este gol', style: TextStyle(fontSize: 20, color: Colors.grey[600])),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(backgroundColor: Color(0xFFE31E24)),
+                    child: Text('CONTINUĂ CUMPĂRĂTURILE', style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
+            );
+          }
           
-          echo 'import "package:flutter/material.dart"; import "package:provider/provider.dart"; import "../state/cart_state.dart"; class CheckoutScreen extends StatefulWidget { @override _CheckoutScreenState createState() => _CheckoutScreenState(); } class _CheckoutScreenState extends State<CheckoutScreen> { final _formKey = GlobalKey<FormState>(); final _nameController = TextEditingController(); final _emailController = TextEditingController(); final _phoneController = TextEditingController(); final _addressController = TextEditingController(); final _cityController = TextEditingController(); final _countyController = TextEditingController(); final _postalCodeController = TextEditingController(); bool _isLoading = false; Widget build(context) { final cart = Provider.of<CartState>(context); return Scaffold( backgroundColor: Colors.white, appBar: AppBar( title: Text("FINALIZARE COMANDĂ", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), backgroundColor: Color(0xFFE31E24), elevation: 0, ), body: Form( key: _formKey, child: SingleChildScrollView( padding: EdgeInsets.all(20), child: Column( crossAxisAlignment: CrossAxisAlignment.start, children: [ Text("Date de facturare", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)), SizedBox(height: 20), _buildTextField(_nameController, "Nume complet", Icons.person), SizedBox(height: 16), _buildTextField(_emailController, "Email", Icons.email, keyboardType: TextInputType.emailAddress), SizedBox(height: 16), _buildTextField(_phoneController, "Telefon", Icons.phone, keyboardType: TextInputType.phone), SizedBox(height: 16), _buildTextField(_addressController, "Adresa", Icons.home), SizedBox(height: 16), Row( children: [ Expanded(child: _buildTextField(_cityController, "Oraș", Icons.location_city)), SizedBox(width: 16), Expanded(child: _buildTextField(_countyController, "Județ", Icons.map)), ], ), SizedBox(height: 16), _buildTextField(_postalCodeController, "Cod poștal", Icons.local_post_office), SizedBox(height: 32), Container( padding: EdgeInsets.all(20), decoration: BoxDecoration( color: Colors.grey[50], borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey[200]!), ), child: Column( children: [ Row( mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [ Text("Subtotal:", style: TextStyle(fontSize: 16)), Text("${cart.total.toStringAsFixed(2)} RON", style: TextStyle(fontSize: 16)), ], ), SizedBox(height: 8), Row( mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [ Text("Livrare:", style: TextStyle(fontSize: 16)), Text("15.00 RON", style: TextStyle(fontSize: 16)), ], ), Divider(height: 24), Row( mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [ Text("TOTAL:", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)), Text("${(cart.total + 15).toStringAsFixed(2)} RON", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFE31E24))), ], ), ], ), ), SizedBox(height: 24), Container( padding: EdgeInsets.all(16), decoration: BoxDecoration( color: Colors.amber[50], borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.amber[200]!), ), child: Row( children: [ Icon(Icons.payment, color: Colors.amber[700]), SizedBox(width: 12), Expanded( child: Text( "Plata se va face la livrare (Ramburs)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500), ), ), ], ), ), SizedBox(height: 32), Container( width: double.infinity, child: ElevatedButton( onPressed: _isLoading ? null : _submitOrder, style: ElevatedButton.styleFrom( backgroundColor: Color(0xFFE31E24), padding: EdgeInsets.symmetric(vertical: 18), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), ), child: _isLoading ? CircularProgressIndicator(color: Colors.white) : Text("PLASEAZĂ COMANDA", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)), ), ), ], ), ), ), ); } Widget _buildTextField(TextEditingController controller, String label, IconData icon, {TextInputType? keyboardType}) { return TextFormField( controller: controller, keyboardType: keyboardType, decoration: InputDecoration( labelText: label, prefixIcon: Icon(icon, color: Color(0xFFE31E24)), border: OutlineInputBorder( borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!), ), focusedBorder: OutlineInputBorder( borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Color(0xFFE31E24), width: 2), ), ), validator: (value) { if (value == null || value.isEmpty) { return "Acest câmp este obligatoriu"; } if (label == "Email" && !value.contains("@")) { return "Email invalid"; } return null; }, ); } void _submitOrder() async { if (!_formKey.currentState!.validate()) return; setState(() => _isLoading = true); final billingDetails = { "first_name": _nameController.text.split(" ").first, "last_name": _nameController.text.split(" ").length > 1 ? _nameController.text.split(" ").last : "", "email": _emailController.text, "phone": _phoneController.text, "address_1": _addressController.text, "city": _cityController.text, "state": _countyController.text, "postcode": _postalCodeController.text, "country": "RO", }; final cart = Provider.of<CartState>(context, listen: false); final success = await cart.createOrder(billingDetails); setState(() => _isLoading = false); if (success) { showDialog( context: context, barrierDismissible: false, builder: (context) => AlertDialog( title: Row( children: [ Icon(Icons.check_circle, color: Colors.green, size: 28), SizedBox(width: 12), Text("Comandă plasată!"), ], ), content: Text("Comanda dvs. a fost plasată cu succes. Veți fi contactat în curând pentru confirmare."), actions: [ TextButton( onPressed: () { Navigator.of(context).popUntil((route) => route.isFirst); }, child: Text("OK", style: TextStyle(color: Color(0xFFE31E24))), ), ], ), ); } else { ScaffoldMessenger.of(context).showSnackBar( SnackBar( content: Text("Eroare la plasarea comenzii. Încercați din nou."), backgroundColor: Colors.red, ), ); } } } class AccountScreen extends StatelessWidget { Widget build(context) { return Scaffold( backgroundColor: Colors.white, appBar: AppBar( title: Text("CONTUL MEU", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), backgroundColor: Color(0xFFE31E24), elevation: 0, ), body: ListView( padding: EdgeInsets.all(16), children: [ Container( padding: EdgeInsets.all(20), decoration: BoxDecoration( color: Colors.grey[50], borderRadius: BorderRadius.circular(12), ), child: Row( children: [ CircleAvatar( radius: 30, backgroundColor: Color(0xFFE31E24), child: Icon(Icons.person, color: Colors.white, size: 30), ), SizedBox(width: 16), Expanded( child: Column( crossAxisAlignment: CrossAxisAlignment.start, children: [ Text("Conectează-te", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), Text("Pentru a accesa contul tău", style: TextStyle(color: Colors.grey[600])), ], ), ), Icon(Icons.arrow_forward_ios, color: Colors.grey[400]), ], ), ), SizedBox(height: 24), _buildMenuSection("Comenzi și cont", [ _buildMenuItem(Icons.history, "Comenzile mele", "Vezi istoricul comenzilor"), _buildMenuItem(Icons.favorite, "Produse favorite", "Lista dorințelor"), _buildMenuItem(Icons.settings, "Setări cont", "Modifică datele personale"), ]), SizedBox(height: 16), _buildMenuSection("Suport și informații", [ _buildMenuItem(Icons.help_outline, "Ajutor și suport", "contact@hookbaits.ro"), _buildMenuItem(Icons.info_outline, "Despre aplicație", "Versiunea 1.0.0"), ]), ], ), ); } Widget _buildMenuSection(String title, List<Widget> items) { return Container( decoration: BoxDecoration( color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [ BoxShadow( color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 8, offset: Offset(0, 2), ), ], ), child: Column( crossAxisAlignment: CrossAxisAlignment.start, children: [ Padding( padding: EdgeInsets.all(16), child: Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[700])), ), ...items, ], ), ); } Widget _buildMenuItem(IconData icon, String title, String subtitle) { return ListTile( leading: Container( padding: EdgeInsets.all(8), decoration: BoxDecoration( color: Color(0xFFE31E24).withOpacity(0.1), borderRadius: BorderRadius.circular(8), ), child: Icon(icon, color: Color(0xFFE31E24)), ), title: Text(title, style: TextStyle(fontWeight: FontWeight.w500)), subtitle: Text(subtitle, style: TextStyle(color: Colors.grey[600], fontSize: 12)), trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]), onTap: () { if (title == "Despre aplicație") { showDialog( context: context, builder: (context) => AlertDialog( title: Row( children: [ Icon(Icons.fishing, color: Color(0xFFE31E24)), SizedBox(width: 12), Text("Hookbaits"), ], ), content: Text("Aplicația oficială Hookbaits pentru comenzi online de produse de pescuit premium.\\n\\nVersiunea: 1.0.0\\nDezvoltată pentru: hookbaits.ro"), actions: [ TextButton( onPressed: () => Navigator.pop(context), child: Text("OK", style: TextStyle(color: Color(0xFFE31E24))), ), ], ), ); } }, ); } }' > lib/screens/account_screen.dart
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: cart.items.length,
+                  itemBuilder: (context, index) {
+                    final item = cart.items[index];
+                    return Card(
+                      margin: EdgeInsets.all(8),
+                      child: ListTile(
+                        leading: item['images'] != null && item['images'].isNotEmpty
+                          ? Image.network(item['images'][0]['src'], width: 50, height: 50, fit: BoxFit.cover)
+                          : Icon(Icons.image),
+                        title: Text(item['name'] ?? 'Produs'),
+                        subtitle: Text('${item['price'] ?? '0'} RON'),
+                        trailing: IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => cart.remove(index),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 5)],
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('TOTAL:', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                        Text('${cart.total.toStringAsFixed(2)} RON', 
+                             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFE31E24))),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Funcționalitate în dezvoltare')),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFFE31E24),
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: Text('FINALIZEAZĂ COMANDA', style: TextStyle(color: Colors.white, fontSize: 16)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+EOF
+          
+          cat > lib/screens/account_screen.dart << 'EOF'
+import 'package:flutter/material.dart';
+
+class AccountScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text('CONTUL MEU', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Color(0xFFE31E24),
+        elevation: 0,
+      ),
+      body: ListView(
+        padding: EdgeInsets.all(16),
+        children: [
+          Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Color(0xFFE31E24),
+                  child: Icon(Icons.person, color: Colors.white, size: 30),
+                ),
+                SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Conectează-te', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text('Pentru a accesa contul tău', style: TextStyle(color: Colors.grey[600])),
+                    ],
+                  ),
+                ),
+                Icon(Icons.arrow_forward_ios, color: Colors.grey[400]),
+              ],
+            ),
+          ),
+          SizedBox(height: 24),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Icon(Icons.history, color: Color(0xFFE31E24)),
+                  title: Text('Comenzile mele'),
+                  subtitle: Text('Vezi istoricul comenzilor'),
+                  trailing: Icon(Icons.arrow_forward_ios),
+                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Funcționalitate în dezvoltare')),
+                  ),
+                ),
+                Divider(),
+                ListTile(
+                  leading: Icon(Icons.favorite, color: Color(0xFFE31E24)),
+                  title: Text('Produse favorite'),
+                  subtitle: Text('Lista dorințelor'),
+                  trailing: Icon(Icons.arrow_forward_ios),
+                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Funcționalitate în dezvoltare')),
+                  ),
+                ),
+                Divider(),
+                ListTile(
+                  leading: Icon(Icons.help_outline, color: Color(0xFFE31E24)),
+                  title: Text('Ajutor și suport'),
+                  subtitle: Text('contact@hookbaits.ro'),
+                  trailing: Icon(Icons.arrow_forward_ios),
+                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Pentru suport: contact@hookbaits.ro')),
+                  ),
+                ),
+                Divider(),
+                ListTile(
+                  leading: Icon(Icons.info_outline, color: Color(0xFFE31E24)),
+                  title: Text('Despre aplicație'),
+                  subtitle: Text('Versiunea 1.0.0'),
+                  trailing: Icon(Icons.arrow_forward_ios),
+                  onTap: () => showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Row(
+                        children: [
+                          Icon(Icons.anchor, color: Color(0xFFE31E24)),
+                          SizedBox(width: 12),
+                          Text('Hookbaits'),
+                        ],
+                      ),
+                      content: Text('Aplicația oficială Hookbaits pentru comenzi online de produse de pescuit premium.\n\nVersiunea: 1.0.0\nDezvoltată pentru: hookbaits.ro'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text('OK', style: TextStyle(color: Color(0xFFE31E24))),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+EOF
 
       - name: Copy app icon
         run: |
