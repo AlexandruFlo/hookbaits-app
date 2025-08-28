@@ -46,6 +46,14 @@ jobs:
         if [ -f android/app/build.gradle ]; then
           sed -i "s/minSdkVersion [0-9]\+/minSdkVersion 21/" android/app/build.gradle || true
         fi
+        # Force v2 embedding by removing v1 markers if any were introduced
+        if [ -f android/app/src/main/AndroidManifest.xml ]; then
+          sed -i "s/android:name=\"io.flutter.app.FlutterApplication\"//g" android/app/src/main/AndroidManifest.xml || true
+        fi
+        if [ -f android/app/src/main/kotlin/com/hookbaits/hookbaits_shop/MainActivity.kt ]; then
+          sed -i "s/io.flutter.app.FlutterActivity/io.flutter.embedding.android.FlutterActivity/g" android/app/src/main/kotlin/com/hookbaits/hookbaits_shop/MainActivity.kt || true
+          sed -i "s/GeneratedPluginRegistrant\.registerWith(this)//g" android/app/src/main/kotlin/com/hookbaits/hookbaits_shop/MainActivity.kt || true
+        fi
         # App icon from local assets/icon.png or LOGO_URL
         if [ -f assets/icon.png ]; then
           python -c "from PIL import Image; img=Image.open('assets/icon.png').convert('RGBA'); s=1024; c=Image.new('RGBA',(s,s),(10,127,46,255)); r=min(s/img.width, s/img.height); ns=(int(img.width*r), int(img.height*r)); img=img.resize(ns, Image.LANCZOS); c.paste(img,((s-img.width)//2,(s-img.height)//2),img); c.save('assets/icon.png')"
@@ -66,7 +74,15 @@ jobs:
         BASE_URL: ${{ secrets.BASE_URL }}
       run: |
         if [ -z "$BASE_URL" ]; then BASE_URL=https://hookbaits.ro; fi
-        flutter build apk --release --dart-define=BASE_URL=$BASE_URL
+        flutter clean
+        flutter pub get
+        echo "--- Plugins and deps ---"
+        flutter pub deps --style=compact || true
+        echo "--- Search for v1 embedding markers ---"
+        grep -R "io.flutter.app.FlutterApplication\|registerWith\(" -n android || true
+        grep -R "io.flutter.app.FlutterApplication\|registerWith\(" -n .dart_tool || true
+        echo "--- Building APK ---"
+        flutter build apk -v --release --dart-define=BASE_URL=$BASE_URL
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
