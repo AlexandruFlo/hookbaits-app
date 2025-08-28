@@ -28,7 +28,10 @@ jobs:
         working-directory: public_html/mobile_app
         run: |
           flutter --version
-          flutter create . --platforms=android --org com.hookbaits --project-name hookbaits_shop --overwrite
+          # Creează platforma Android doar dacă lipsește (nu suprascrie proiectul)
+          if [ ! -d android ]; then
+            flutter create . --platforms=android --org com.hookbaits --project-name hookbaits_shop
+          fi
           flutter pub get
           if [ -f android/app/build.gradle ]; then
             sed -i "s/minSdkVersion [0-9]\+/minSdkVersion 21/" android/app/build.gradle || true
