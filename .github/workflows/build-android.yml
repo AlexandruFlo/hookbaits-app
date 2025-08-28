@@ -36,23 +36,23 @@ jobs:
           if [ -f android/app/build.gradle ]; then
             sed -i "s/minSdkVersion [0-9]\+/minSdkVersion 21/" android/app/build.gradle || true
           fi
-          chmod +x android/gradlew || true
 
-      - name: Build APK (release) via Gradle
-        working-directory: public_html/mobile_app/android
+      - name: Build APK (release) via Flutter
+        working-directory: public_html/mobile_app
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
         run: |
-          ./gradlew clean assembleRelease --no-daemon --stacktrace
+          if [ -z "$BASE_URL" ]; then BASE_URL=https://hookbaits.ro; fi
+          flutter build apk --release --dart-define=BASE_URL=$BASE_URL
 
       - name: List APK outputs
-        working-directory: public_html/mobile_app/android
+        working-directory: public_html/mobile_app
         run: |
-          echo "Listing android/app/build/outputs" && ls -R app/build/outputs || true
-          echo "Listing ../build/app/outputs" && ls -R ../build/app/outputs || true
+          echo "Listing build/app/outputs" && ls -R build/app/outputs || true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: hookbaits-apk
           path: |
-            public_html/mobile_app/android/app/build/outputs/**/*.apk
             public_html/mobile_app/build/app/outputs/**/*.apk
