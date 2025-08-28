@@ -37,8 +37,10 @@ jobs:
       working-directory: public_html/mobile_app
       run: |
         flutter --version
-        # Regenerate Android platform to ensure v2 embedding
-        flutter create . --platforms=android --org com.hookbaits --project-name hookbaits_shop --overwrite
+        # Create Android platform ONLY if missing (do NOT overwrite project files)
+        if [ ! -d android ]; then
+          flutter create . --platforms=android --org com.hookbaits --project-name hookbaits_shop
+        fi
         flutter pub get
         # Ensure Android SDK versions
         if [ -f android/app/build.gradle ]; then
@@ -47,12 +49,12 @@ jobs:
         # App icon from local assets/icon.png or LOGO_URL
         if [ -f assets/icon.png ]; then
           python -c "from PIL import Image; img=Image.open('assets/icon.png').convert('RGBA'); s=1024; c=Image.new('RGBA',(s,s),(10,127,46,255)); r=min(s/img.width, s/img.height); ns=(int(img.width*r), int(img.height*r)); img=img.resize(ns, Image.LANCZOS); c.paste(img,((s-img.width)//2,(s-img.height)//2),img); c.save('assets/icon.png')"
-          if [ -f android/app/src/main/AndroidManifest.xml ]; then flutter pub run flutter_launcher_icons; else echo "Android platform missing, skipping launcher icons"; fi
+          if [ -f android/app/src/main/AndroidManifest.xml ]; then flutter pub add dev:flutter_launcher_icons && flutter pub run flutter_launcher_icons; else echo "Android platform missing, skipping launcher icons"; fi
         elif [ -n "${{ secrets.LOGO_URL }}" ]; then
           mkdir -p assets
           curl -L "${{ secrets.LOGO_URL }}" -o assets/icon.png
           python -c "from PIL import Image; img=Image.open('assets/icon.png').convert('RGBA'); s=1024; c=Image.new('RGBA',(s,s),(10,127,46,255)); r=min(s/img.width, s/img.height); ns=(int(img.width*r), int(img.height*r)); img=img.resize(ns, Image.LANCZOS); c.paste(img,((s-img.width)//2,(s-img.height)//2),img); c.save('assets/icon.png')"
-          if [ -f android/app/src/main/AndroidManifest.xml ]; then flutter pub run flutter_launcher_icons; else echo "Android platform missing, skipping launcher icons"; fi
+          if [ -f android/app/src/main/AndroidManifest.xml ]; then flutter pub add dev:flutter_launcher_icons && flutter pub run flutter_launcher_icons; else echo "Android platform missing, skipping launcher icons"; fi
         else
           echo "No icon provided; skipping flutter_launcher_icons"
         fi
