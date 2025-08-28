@@ -25,6 +25,56 @@ jobs:
         channel: 'stable'
         flutter-version: '3.22.2'
 
+    - name: Prepare Flutter project
+      working-directory: public_html/mobile_app
+      run: |
+        flutter --version
+        if [ ! -d android ]; then
+          flutter create . --platforms=android --org com.hookbaits --project-name hookbaits_shop
+        fi
+        flutter pub get
+        if [ -f android/app/build.gradle ]; then
+          sed -i "s/minSdkVersion [0-9]\+/minSdkVersion 21/" android/app/build.gradle || true
+        fi
+        ls -la android/app/src/main || true
+
+    - name: Build APK (release) via Gradle
+      working-directory: public_html/mobile_app/android
+      run: |
+        ./gradlew clean assembleRelease --no-daemon --stacktrace
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: hookbaits-apk
+        path: public_html/mobile_app/android/app/build/outputs/apk/release/app-release.apk
+name: Android Build
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        flutter-version: '3.22.2'
+
     - name: Set up Python (Pillow for icon)
       uses: actions/setup-python@v5
       with:
@@ -37,27 +87,41 @@ jobs:
       working-directory: public_html/mobile_app
       run: |
         flutter --version
+        # Create Android platform ONLY if missing (do NOT overwrite project files)
         if [ ! -d android ]; then
           flutter create . --platforms=android --org com.hookbaits --project-name hookbaits_shop
         fi
         flutter pub get
+        # Ensure Android SDK versions
         if [ -f android/app/build.gradle ]; then
           sed -i "s/minSdkVersion [0-9]\+/minSdkVersion 21/" android/app/build.gradle || true
         fi
-        # App icon (optional)
+        # Force v2 embedding by removing v1 markers if any were introduced
+        if [ -f android/app/src/main/AndroidManifest.xml ]; then
+          sed -i "s/android:name=\"io.flutter.app.FlutterApplication\"//g" android/app/src/main/AndroidManifest.xml || true
+        fi
+        if [ -f android/app/src/main/kotlin/com/hookbaits/hookbaits_shop/MainActivity.kt ]; then
+          sed -i "s/io.flutter.app.FlutterActivity/io.flutter.embedding.android.FlutterActivity/g" android/app/src/main/kotlin/com/hookbaits/hookbaits_shop/MainActivity.kt || true
+          sed -i "s/GeneratedPluginRegistrant\.registerWith(this)//g" android/app/src/main/kotlin/com/hookbaits/hookbaits_shop/MainActivity.kt || true
+        fi
+        # Ensure flutterEmbedding v2 meta-data is present in AndroidManifest
+        if [ -f android/app/src/main/AndroidManifest.xml ]; then
+          if ! grep -q 'android:name="flutterEmbedding"' android/app/src/main/AndroidManifest.xml; then
+            sed -i '/<application[[:space:]>]/a \
+    <meta-data\n+        android:name="flutterEmbedding"\n+        android:value="2" />' android/app/src/main/AndroidManifest.xml || true
+          fi
+        fi
+        # App icon from local assets/icon.png or LOGO_URL
         if [ -f assets/icon.png ]; then
-          python - <<'PY'
-from PIL import Image
-img=Image.open('assets/icon.png').convert('RGBA')
-s=1024
-c=Image.new('RGBA',(s,s),(10,127,46,255))
-r=min(s/img.width, s/img.height)
-img=img.resize((int(img.width*r), int(img.height*r)))
-c.paste(img,((s-img.width)//2,(s-img.height)//2),img)
-c.save('assets/icon.png')
-PY
-          flutter pub add dev:flutter_launcher_icons
-          flutter pub run flutter_launcher_icons
+          python -c "from PIL import Image; img=Image.open('assets/icon.png').convert('RGBA'); s=1024; c=Image.new('RGBA',(s,s),(10,127,46,255)); r=min(s/img.width, s/img.height); ns=(int(img.width*r), int(img.height*r)); img=img.resize(ns, Image.LANCZOS); c.paste(img,((s-img.width)//2,(s-img.height)//2),img); c.save('assets/icon.png')"
+          if [ -f android/app/src/main/AndroidManifest.xml ]; then flutter pub add dev:flutter_launcher_icons && flutter pub run flutter_launcher_icons; else echo "Android platform missing, skipping launcher icons"; fi
+        elif [ -n "${{ secrets.LOGO_URL }}" ]; then
+          mkdir -p assets
+          curl -L "${{ secrets.LOGO_URL }}" -o assets/icon.png
+          python -c "from PIL import Image; img=Image.open('assets/icon.png').convert('RGBA'); s=1024; c=Image.new('RGBA',(s,s),(10,127,46,255)); r=min(s/img.width, s/img.height); ns=(int(img.width*r), int(img.height*r)); img=img.resize(ns, Image.LANCZOS); c.paste(img,((s-img.width)//2,(s-img.height)//2),img); c.save('assets/icon.png')"
+          if [ -f android/app/src/main/AndroidManifest.xml ]; then flutter pub add dev:flutter_launcher_icons && flutter pub run flutter_launcher_icons; else echo "Android platform missing, skipping launcher icons"; fi
+        else
+          echo "No icon provided; skipping flutter_launcher_icons"
         fi
         ls -la android/app/src/main || true
 
