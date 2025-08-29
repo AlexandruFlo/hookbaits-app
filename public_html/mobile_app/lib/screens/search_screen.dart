@@ -16,6 +16,7 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final WooStoreApiClient _apiClient = WooStoreApiClient();
   List<Product> _searchResults = [];
   bool _isLoading = false;
   bool _hasSearched = false;
@@ -42,12 +43,10 @@ class _SearchScreenState extends State<SearchScreen> {
 
     try {
       // Căutare în API-ul real WooCommerce
-      final products = await WooCommerceStoreApi.getProducts();
+      final products = await _apiClient.fetchProducts(search: query, perPage: 50);
       
-      // Filtrare locală după nume
-      final filteredProducts = products.where((product) {
-        return product.name.toLowerCase().contains(query.toLowerCase());
-      }).toList();
+      // Rezultatele sunt deja filtrate prin parametrul search
+      final filteredProducts = products;
 
       setState(() {
         _searchResults = filteredProducts;

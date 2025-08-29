@@ -62,6 +62,18 @@ class CartState extends ChangeNotifier {
     }
   }
 
+  void updateQuantity(Product product, int newQuantity) {
+    final idx = _items.indexWhere((i) => i.product.id == product.id);
+    if (idx >= 0) {
+      if (newQuantity <= 0) {
+        _items.removeAt(idx);
+      } else {
+        _items[idx].quantity = newQuantity;
+      }
+      notifyListeners();
+    }
+  }
+
   void clear() {
     _items.clear();
     notifyListeners();
