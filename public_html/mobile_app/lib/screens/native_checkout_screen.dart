@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/cart.dart';
 import '../state/auth_state.dart';
+import '../api/woocommerce_api.dart';
+import '../state/auth_state.dart';
 
 class NativeCheckoutScreen extends StatefulWidget {
   const NativeCheckoutScreen({super.key});
@@ -119,7 +121,7 @@ class _NativeCheckoutScreenState extends State<NativeCheckoutScreen> {
                 child: ElevatedButton(
                   onPressed: _isProcessing ? null : _processOrder,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0A7F2E),
+                    backgroundColor: const Color(0xFF2C3E50),
                     foregroundColor: Colors.white,
                     elevation: 4,
                     shape: RoundedRectangleBorder(
@@ -427,88 +429,94 @@ class _NativeCheckoutScreenState extends State<NativeCheckoutScreen> {
     setState(() => _isProcessing = true);
 
     try {
-      // Simulez procesarea comenzii
-      await Future.delayed(const Duration(seconds: 3));
-
       final cart = context.read<CartState>();
+      final auth = context.read<AuthState>();
       
-      // Creez datele comenzii
-      final orderData = {
-        'customer': {
-          'firstName': _firstNameController.text,
-          'lastName': _lastNameController.text,
-          'email': _emailController.text,
-          'phone': _phoneController.text,
-        },
-        'address': {
-          'street': _addressController.text,
-          'city': _cityController.text,
-          'county': _countyController.text,
-          'postalCode': _postalCodeController.text,
-        },
-        'items': cart.items.map((item) => {
-          'productId': item.product.id,
-          'name': item.product.name,
-          'quantity': item.quantity,
-          'price': item.product.priceRange?.minAmount ?? '0',
-        }).toList(),
-        'shipping': _selectedShippingMethod,
-        'payment': _selectedPaymentMethod,
-        'notes': _notesController.text,
-        'total': (cart.total + (_selectedShippingMethod == 'express' ? 25.0 : 15.0)).toStringAsFixed(2),
+      // Pregătește datele pentru comandă WooCommerce
+      final lineItems = cart.items.map((item) => {
+        'product_id': int.tryParse(item.product.id) ?? 0,
+        'quantity': item.quantity,
+      }).toList();
+      
+      final billing = {
+        'first_name': _firstNameController.text,
+        'last_name': _lastNameController.text,
+        'email': _emailController.text,
+        'phone': _phoneController.text,
+        'address_1': _addressController.text,
+        'city': _cityController.text,
+        'state': _countyController.text,
+        'postcode': _postalCodeController.text,
+        'country': 'RO',
       };
-
-      // În implementarea reală, aici ai trimite datele la server
-      print('Order data: $orderData');
-
-      // Golesc coșul
-      cart.clear();
-
-      setState(() => _isProcessing = false);
-
-      // Afișez confirmarea
-      if (mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => AlertDialog(
-            icon: const Icon(
-              Icons.check_circle,
-              color: Color(0xFF0A7F2E),
-              size: 64,
-            ),
-            title: const Text('Comandă plasată cu succes!'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Comanda ta #HB${DateTime.now().millisecondsSinceEpoch.toString().substring(8)} a fost înregistrată.'),
-                const SizedBox(height: 16),
-                Text('Vei fi contactat în cel mai scurt timp pentru confirmare.'),
-                if (_selectedPaymentMethod == 'bank_transfer') ...[
+      
+      // Creează comanda prin WooCommerce API
+      final result = await WooCommerceAPI.createOrder(
+        lineItems: lineItems,
+        billing: billing,
+        shipping: billing, // Folosește aceeași adresă pentru livrare
+        paymentMethod: _selectedPaymentMethod,
+        status: _selectedPaymentMethod == 'cod' ? 'processing' : 'pending',
+      );
+      
+      if (result != null) {
+        // Comanda creată cu succes în WooCommerce
+        cart.clear();
+        setState(() => _isProcessing = false);
+        
+        if (mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              icon: const Icon(
+                Icons.check_circle,
+                color: Color(0xFF2C3E50),
+                size: 64,
+              ),
+              title: const Text('✅ Comandă plasată cu succes!'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Numărul comenzii: #${result['number']}'),
+                  const SizedBox(height: 8),
+                  Text('Total: ${result['total']} Lei'),
+                  const SizedBox(height: 8),
+                  Text('Status: ${result['status']}'),
                   const SizedBox(height: 16),
-                  const Text('Detaliile de plată au fost trimise pe email.'),
+                  const Text('Comanda a fost înregistrată în sistemul WooCommerce!'),
+                  const SizedBox(height: 8),
+                  const Text('Veți primi un email de confirmare în curând.'),
+                  if (_selectedPaymentMethod == 'bacs') ...[
+                    const SizedBox(height: 16),
+                    const Text('Detaliile de transfer bancar au fost trimise pe email.'),
+                  ],
                 ],
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Închide dialog-ul
+                    Navigator.of(context).pop(); // Întoarce la coș
+                  },
+                  child: const Text('Înțeles'),
+                ),
               ],
             ),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Închide dialog-ul
-                  Navigator.of(context).pop(); // Întoarce la coș
-                },
-                child: const Text('Înțeles'),
-              ),
-            ],
-          ),
-        );
+          );
+        }
+      } else {
+        throw Exception('API-ul WooCommerce nu a putut crea comanda');
       }
     } catch (e) {
       setState(() => _isProcessing = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Eroare la procesarea comenzii: $e'),
+            content: Text('Eroare la plasarea comenzii: $e'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       }

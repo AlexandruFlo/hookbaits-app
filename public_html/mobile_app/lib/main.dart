@@ -24,11 +24,11 @@ class HookbaitsApp extends StatelessWidget {
       child: MaterialApp(
         title: AppConfig.appName,
         theme: ThemeData(
-          primarySwatch: Colors.green,
-          primaryColor: const Color(0xFF0A7F2E), // Verde Hookbaits
+          primarySwatch: Colors.blueGrey,
+          primaryColor: const Color(0xFF2C3E50), // Albastru închis profesional
           scaffoldBackgroundColor: const Color(0xFFF8F9FA),
           appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFF0A7F2E),
+            backgroundColor: Color(0xFF2C3E50),
             foregroundColor: Colors.white,
             elevation: 2,
             titleTextStyle: TextStyle(
@@ -39,16 +39,16 @@ class HookbaitsApp extends StatelessWidget {
           ),
           navigationBarTheme: NavigationBarThemeData(
             backgroundColor: Colors.white,
-            indicatorColor: const Color(0xFF0A7F2E).withOpacity(0.2),
+            indicatorColor: const Color(0xFF2C3E50).withOpacity(0.2),
             labelTextStyle: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.selected)) {
-                return const TextStyle(color: Color(0xFF0A7F2E), fontWeight: FontWeight.bold);
+                return const TextStyle(color: Color(0xFF2C3E50), fontWeight: FontWeight.bold);
               }
               return const TextStyle(color: Colors.grey);
             }),
             iconTheme: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.selected)) {
-                return const IconThemeData(color: Color(0xFF0A7F2E));
+                return const IconThemeData(color: Color(0xFF2C3E50));
               }
               return const IconThemeData(color: Colors.grey);
             }),
@@ -56,7 +56,7 @@ class HookbaitsApp extends StatelessWidget {
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0A7F2E),
+              backgroundColor: const Color(0xFF2C3E50),
               foregroundColor: Colors.white,
               elevation: 2,
               shape: RoundedRectangleBorder(
@@ -74,11 +74,11 @@ class HookbaitsApp extends StatelessWidget {
           inputDecorationTheme: InputDecorationTheme(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF0A7F2E)),
+              borderSide: const BorderSide(color: Color(0xFF2C3E50)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF0A7F2E), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF2C3E50), width: 2),
             ),
           ),
           useMaterial3: true,

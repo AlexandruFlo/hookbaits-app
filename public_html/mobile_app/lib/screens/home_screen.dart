@@ -39,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Badge(
                   isLabelVisible: cart.itemCount > 0,
                   label: Text(cart.itemCount.toString()),
-                  backgroundColor: const Color(0xFF0A7F2E),
+                  backgroundColor: const Color(0xFF2C3E50),
                   textColor: Colors.white,
                   child: const Icon(Icons.shopping_cart_outlined),
                 ),

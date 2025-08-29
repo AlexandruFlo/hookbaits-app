@@ -166,9 +166,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
               margin: const EdgeInsets.all(6),
               clipBehavior: Clip.antiAlias,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: InkWell(
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProductScreen(productId: p.id))),
-                child: Column(
+              child: Stack(
+                children: [
+                  InkWell(
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProductScreen(productId: p.id))),
+                    child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
@@ -183,17 +185,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           ),
                         ),
                         child: imageUrl == null
-                            ? const Icon(Icons.inventory_2_outlined, size: 60, color: Color(0xFF0A7F2E))
+                            ? const Icon(Icons.inventory_2_outlined, size: 60, color: Color(0xFF2C3E50))
                             : CachedNetworkImage(
                                 imageUrl: imageUrl, 
                                 fit: BoxFit.cover,
                                 placeholder: (context, url) => const Center(
-                                  child: CircularProgressIndicator(color: Color(0xFF0A7F2E)),
+                                  child: CircularProgressIndicator(color: Color(0xFF2C3E50)),
                                 ),
                                 errorWidget: (context, url, error) => const Icon(
                                   Icons.inventory_2_outlined, 
                                   size: 60, 
-                                  color: Color(0xFF0A7F2E),
+                                  color: Color(0xFF2C3E50),
                                 ),
                               ),
                       ),
@@ -223,7 +225,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF0A7F2E),
+                                    color: const Color(0xFF2C3E50),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
@@ -242,7 +244,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text('${p.name} adăugat în coș'),
-                                        backgroundColor: const Color(0xFF0A7F2E),
+                                        backgroundColor: const Color(0xFF2C3E50),
                                         duration: const Duration(seconds: 2),
                                         action: SnackBarAction(
                                           label: 'VEZI',
@@ -260,11 +262,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: const Color(0xFF0A7F2E)),
+                                      border: Border.all(color: const Color(0xFF2C3E50)),
                                     ),
                                     child: const Icon(
                                       Icons.add_shopping_cart,
-                                      color: Color(0xFF0A7F2E),
+                                      color: Color(0xFF2C3E50),
                                       size: 16,
                                     ),
                                   ),
@@ -277,6 +279,43 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     ),
                   ],
                 ),
+                  ),
+                  // Inimioara pentru favorite
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: InkWell(
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${p.name} adăugat la favorite'),
+                            backgroundColor: Colors.red[600],
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.favorite_border,
+                          color: Colors.red,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             );
           },

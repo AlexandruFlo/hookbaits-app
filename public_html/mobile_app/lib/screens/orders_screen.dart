@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/auth_state.dart';
+import '../api/woocommerce_api.dart';
+import 'package:provider/provider.dart';
+import '../state/auth_state.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -20,44 +23,59 @@ class _OrdersScreenState extends State<OrdersScreen> {
   }
 
   Future<void> _loadOrders() async {
-    // Simulez încărcarea comenzilor
-    await Future.delayed(const Duration(seconds: 1));
-    
-    // Date de test pentru comenzi
-    setState(() {
-      orders = [
-        {
-          'id': '#HB001',
-          'date': '15 Decembrie 2024',
-          'status': 'Livrată',
-          'total': '125.50',
-          'items': [
-            {'name': 'Momeala Carp Expert 1kg', 'quantity': 1},
-            {'name': 'Boilies Strawberry 20mm', 'quantity': 2},
-          ]
-        },
-        {
-          'id': '#HB002',
-          'date': '12 Decembrie 2024',
-          'status': 'În curs de livrare',
-          'total': '89.00',
-          'items': [
-            {'name': 'Carlig Method Feeder', 'quantity': 3},
-          ]
-        },
-        {
-          'id': '#HB003',
-          'date': '8 Decembrie 2024',
-          'status': 'Procesare',
-          'total': '256.75',
-          'items': [
-            {'name': 'Lanseta Carp Pro 3.6m', 'quantity': 1},
-            {'name': 'Mulineta Quick Drag', 'quantity': 1},
-          ]
-        },
-      ];
-      isLoading = false;
-    });
+    final auth = context.read<AuthState>();
+    if (auth.isAuthenticated && auth.currentUser != null) {
+      try {
+        final customerId = auth.currentUser!['id'];
+        final userOrders = await WooCommerceAPI.getUserOrders(customerId);
+        
+        // Convertește comenzile WooCommerce în formatul aplicației
+        final formattedOrders = userOrders.map<Map<String, dynamic>>((order) {
+          final lineItems = order['line_items'] as List<dynamic>? ?? [];
+          return {
+            'id': '#${order['number']}',
+            'date': DateTime.parse(order['date_created']).toLocal().toString().split(' ')[0],
+            'status': _translateStatus(order['status']),
+            'total': order['total'],
+            'items': lineItems.map((item) => {
+              'name': item['name'],
+              'quantity': item['quantity'],
+            }).toList(),
+          };
+        }).toList();
+        
+        setState(() {
+          orders = formattedOrders;
+          isLoading = false;
+        });
+      } catch (e) {
+        setState(() => isLoading = false);
+        print('Eroare la încărcarea comenzilor: $e');
+      }
+    } else {
+      setState(() => isLoading = false);
+    }
+  }
+
+  String _translateStatus(String status) {
+    switch (status) {
+      case 'completed':
+        return 'Livrată';
+      case 'processing':
+        return 'În curs de livrare';
+      case 'pending':
+        return 'Procesare';
+      case 'on-hold':
+        return 'În așteptare';
+      case 'cancelled':
+        return 'Anulată';
+      case 'refunded':
+        return 'Rambursată';
+      case 'failed':
+        return 'Eșuată';
+      default:
+        return status;
+    }
   }
 
   Color _getStatusColor(String status) {
@@ -80,7 +98,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Comenzile mele'),
-        backgroundColor: const Color(0xFF0A7F2E),
+        backgroundColor: const Color(0xFF2C3E50),
         foregroundColor: Colors.white,
       ),
       body: !auth.isAuthenticated
@@ -88,7 +106,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
             child: Text('Trebuie să te autentifici pentru a vedea comenzile'),
           )
         : isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF0A7F2E)))
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF2C3E50)))
           : orders.isEmpty
             ? Center(
                 child: Column(
@@ -170,7 +188,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
-                                    color: Color(0xFF0A7F2E),
+                                    color: Color(0xFF2C3E50),
                                   ),
                                 ),
                                 TextButton(
