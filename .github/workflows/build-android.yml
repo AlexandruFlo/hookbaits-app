@@ -33,6 +33,11 @@ jobs:
           cp -r public_html/mobile_app/lib/* temp_app/lib/
           cp public_html/mobile_app/pubspec.yaml temp_app/
           cp -r public_html/mobile_app/assets temp_app/ || true
+          
+      - name: Add missing dependencies
+        working-directory: temp_app
+        run: |
+          flutter pub add shared_preferences
 
       - name: Get Flutter dependencies
         working-directory: temp_app
