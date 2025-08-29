@@ -38,9 +38,14 @@ class HookbaitsApp extends StatelessWidget {
             ),
           ),
           bottomNavigationBarTheme: const BottomNavigationBarTheme(
-            backgroundColor: Colors.white,
             selectedItemColor: Color(0xFF0A7F2E),
             unselectedItemColor: Colors.grey,
+            elevation: 8,
+            type: BottomNavigationBarType.fixed,
+          ),
+          navigationBarTheme: const NavigationBarThemeData(
+            backgroundColor: Colors.white,
+            indicatorColor: Color(0xFF0A7F2E),
             elevation: 8,
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
