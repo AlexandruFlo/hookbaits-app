@@ -28,14 +28,17 @@ flutter:
     - assets/logo.png
 
 flutter_launcher_icons:
-  android: true
+  android: "launcher_icon"
   ios: false
   image_path: "assets/logo.png"
+  # Iconița adaptivă pentru Android cu fundal negru
   adaptive_icon_background: "#000000"
   adaptive_icon_foreground: "assets/logo.png"
-  min_sdk_android: 21
-  remove_alpha_ios: true
-  # Configurare pentru iconița perfectă
+  # Configurații pentru iconiță perfectă
   background_color: "#000000"
   theme_color: "#000000"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  # Forțează regenerarea iconițelor
+  android_override: true
 
