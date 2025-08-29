@@ -41,11 +41,69 @@ class _ProductListScreenState extends State<ProductListScreen> {
         if (newItems.isEmpty) hasMore = false;
       });
     } catch (e) {
+      // Dacă API-ul nu funcționează, încarcă produse de test
+      _loadTestProducts();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Eroare: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Conexiune eșuată, se încarcă produse de test'))
+        );
       }
     } finally {
       if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  void _loadTestProducts() {
+    if (products.isEmpty) {
+      final testProducts = [
+        Product(
+          id: 1,
+          name: 'Momeala Carp Expert 1kg',
+          slug: 'momeala-carp-expert-1kg',
+          priceRange: ProductPriceRange(minAmount: '45'),
+          image: ProductImage(src: 'https://via.placeholder.com/300x300/0A7F2E/FFFFFF?text=Momeala+1'),
+        ),
+        Product(
+          id: 2,
+          name: 'Boilies Strawberry 20mm',
+          slug: 'boilies-strawberry-20mm',
+          priceRange: ProductPriceRange(minAmount: '32'),
+          image: ProductImage(src: 'https://via.placeholder.com/300x300/0A7F2E/FFFFFF?text=Boilies'),
+        ),
+        Product(
+          id: 3,
+          name: 'Carlig Method Feeder',
+          slug: 'carlig-method-feeder',
+          priceRange: ProductPriceRange(minAmount: '18'),
+          image: ProductImage(src: 'https://via.placeholder.com/300x300/0A7F2E/FFFFFF?text=Carlig'),
+        ),
+        Product(
+          id: 4,
+          name: 'Fir Monofilament 0.25mm',
+          slug: 'fir-monofilament-025mm',
+          priceRange: ProductPriceRange(minAmount: '25'),
+          image: ProductImage(src: 'https://via.placeholder.com/300x300/0A7F2E/FFFFFF?text=Fir'),
+        ),
+        Product(
+          id: 5,
+          name: 'Lanseta Carp Pro 3.6m',
+          slug: 'lanseta-carp-pro-36m',
+          priceRange: ProductPriceRange(minAmount: '180'),
+          image: ProductImage(src: 'https://via.placeholder.com/300x300/0A7F2E/FFFFFF?text=Lanseta'),
+        ),
+        Product(
+          id: 6,
+          name: 'Mulineta Quick Drag',
+          slug: 'mulineta-quick-drag',
+          priceRange: ProductPriceRange(minAmount: '150'),
+          image: ProductImage(src: 'https://via.placeholder.com/300x300/0A7F2E/FFFFFF?text=Mulineta'),
+        ),
+      ];
+      
+      setState(() {
+        products.addAll(testProducts);
+        hasMore = false;
+      });
     }
   }
 
