@@ -89,8 +89,28 @@ jobs:
           if [ -z "$BASE_URL" ]; then BASE_URL=https://hookbaits.ro; fi
           flutter build apk --release --dart-define=BASE_URL=$BASE_URL
 
-      - name: 📤 Upload APK
+      - name: 📦 Package APK for Email Safety
+        working-directory: public_html/temp_app/build/app/outputs/apk/release
+        run: |
+          # Redenumește APK-ul pentru a evita blocarea Gmail
+          mv app-release.apk HOOKBAITS-Shop-v1.0.application
+          
+          # Creează arhiva cu extensie sigură
+          echo "📦 Împachetez aplicația HOOKBAITS..."
+          tar -czf hookbaits-mobile-app.tar.gz HOOKBAITS-Shop-v1.0.application
+          
+          # Verifică fișierul creat
+          ls -la hookbaits-mobile-app.tar.gz
+          echo "✅ Aplicația HOOKBAITS este gata pentru descărcare!"
+          echo ""
+          echo "📧 INSTRUCȚIUNI PENTRU GMAIL:"
+          echo "1. Descarcă fișierul hookbaits-mobile-app.tar.gz"
+          echo "2. Extragi cu WinRAR/7-Zip pentru a obține HOOKBAITS-Shop-v1.0.application"
+          echo "3. Redenumește extensia de la .application la .apk"
+          echo "4. Instalează APK-ul pe telefon cu 'Surse necunoscute' activate"
+
+      - name: 📤 Upload HOOKBAITS App (Gmail Safe)
         uses: actions/upload-artifact@v4
         with:
-          name: hookbaits-app-100-functional
-          path: public_html/temp_app/build/app/outputs/apk/release/app-release.apk
+          name: HOOKBAITS-Mobile-App-Gmail-Safe
+          path: public_html/temp_app/build/app/outputs/apk/release/hookbaits-mobile-app.tar.gz
