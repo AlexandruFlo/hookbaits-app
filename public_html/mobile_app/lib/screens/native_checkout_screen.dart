@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../state/cart.dart';
 import '../state/auth_state.dart';
 import '../api/woocommerce_api.dart';
+import '../utils/form_validators.dart';
+import '../theme/app_theme.dart';
 import '../state/auth_state.dart';
 
 class NativeCheckoutScreen extends StatefulWidget {
@@ -27,6 +29,18 @@ class _NativeCheckoutScreenState extends State<NativeCheckoutScreen> {
   String _selectedPaymentMethod = 'cod';
   String _selectedShippingMethod = 'standard';
   bool _isProcessing = false;
+  bool _agreedToTerms = false;
+  bool _wantsNewsletter = false;
+  bool _differentShippingAddress = false;
+  
+  // Controllere pentru adresa de livrare
+  final _shippingFirstNameController = TextEditingController();
+  final _shippingLastNameController = TextEditingController();
+  final _shippingAddressController = TextEditingController();
+  final _shippingCityController = TextEditingController();
+  final _shippingCountyController = TextEditingController();
+  final _shippingPostalCodeController = TextEditingController();
+  final _shippingPhoneController = TextEditingController();
 
   @override
   void initState() {
@@ -416,14 +430,46 @@ class _NativeCheckoutScreenState extends State<NativeCheckoutScreen> {
   }
 
   Future<void> _processOrder() async {
-    if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Te rog completează toate câmpurile obligatorii'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    // Validări stricte înainte de procesare
+    final cart = context.read<CartState>();
+    
+    // 1. Verifică că există produse în coș
+    final cartValidation = FormValidators.validateCartNotEmpty(cart.itemCount);
+    if (cartValidation != null) {
+      _showErrorDialog('Coș gol', cartValidation);
       return;
+    }
+    
+    // 2. Validează formularul
+    if (!_formKey.currentState!.validate()) {
+      _showErrorDialog('Formular incomplet', 'Te rog completează toate câmpurile obligatorii corect.');
+      return;
+    }
+    
+    // 3. Verifică acceptarea termenilor
+    if (!_agreedToTerms) {
+      _showErrorDialog('Termeni și condiții', 'Trebuie să accepți termenii și condițiile pentru a continua.');
+      return;
+    }
+    
+    // 4. Validează metoda de plată
+    final paymentValidation = FormValidators.validatePaymentMethod(_selectedPaymentMethod);
+    if (paymentValidation != null) {
+      _showErrorDialog('Metodă de plată', paymentValidation);
+      return;
+    }
+    
+    // 5. Validează metoda de livrare
+    final shippingValidation = FormValidators.validateShippingMethod(_selectedShippingMethod);
+    if (shippingValidation != null) {
+      _showErrorDialog('Metodă de livrare', shippingValidation);
+      return;
+    }
+    
+    // 6. Pentru plățile cu cardul, validări suplimentare
+    if (_selectedPaymentMethod == 'stripe') {
+      final confirmed = await _confirmCardPayment();
+      if (!confirmed) return;
     }
 
     setState(() => _isProcessing = true);
@@ -523,6 +569,67 @@ class _NativeCheckoutScreenState extends State<NativeCheckoutScreen> {
     }
   }
 
+  // Helper pentru afișarea erorilor
+  void _showErrorDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Confirmare pentru plată cu cardul
+  Future<bool> _confirmCardPayment() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('🔒 Plată securizată cu cardul'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Confirmați plata cu cardul pentru această comandă?'),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                Icon(Icons.security, color: Colors.green, size: 16),
+                SizedBox(width: 8),
+                Text('Conexiune securizată SSL'),
+              ],
+            ),
+            SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.credit_card, color: Colors.blue, size: 16),
+                SizedBox(width: 8),
+                Text('Procesare prin gateway securizat'),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Anulează'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Confirmă plata'),
+          ),
+        ],
+      ),
+    );
+    return confirmed ?? false;
+  }
+
   @override
   void dispose() {
     _firstNameController.dispose();
@@ -534,6 +641,13 @@ class _NativeCheckoutScreenState extends State<NativeCheckoutScreen> {
     _countyController.dispose();
     _postalCodeController.dispose();
     _notesController.dispose();
+    _shippingFirstNameController.dispose();
+    _shippingLastNameController.dispose();
+    _shippingAddressController.dispose();
+    _shippingCityController.dispose();
+    _shippingCountyController.dispose();
+    _shippingPostalCodeController.dispose();
+    _shippingPhoneController.dispose();
     super.dispose();
   }
 }

@@ -4,7 +4,10 @@ import 'package:provider/provider.dart';
 import 'config.dart';
 import 'state/cart.dart';
 import 'state/auth_state.dart';
+import 'state/favorites_state.dart';
+import 'state/addresses_state.dart';
 import 'screens/splash_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,69 +23,12 @@ class HookbaitsApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthState()),
         ChangeNotifierProvider(create: (_) => CartState()),
+        ChangeNotifierProvider(create: (_) => FavoritesState()),
+        ChangeNotifierProvider(create: (_) => AddressesState()),
       ],
       child: MaterialApp(
         title: AppConfig.appName,
-        theme: ThemeData(
-          primarySwatch: Colors.blueGrey,
-          primaryColor: const Color(0xFF2C3E50), // Albastru închis profesional
-          scaffoldBackgroundColor: const Color(0xFFF8F9FA),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFF2C3E50),
-            foregroundColor: Colors.white,
-            elevation: 2,
-            titleTextStyle: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          navigationBarTheme: NavigationBarThemeData(
-            backgroundColor: Colors.white,
-            indicatorColor: const Color(0xFF2C3E50).withOpacity(0.2),
-            labelTextStyle: WidgetStateProperty.resolveWith((states) {
-              if (states.contains(WidgetState.selected)) {
-                return const TextStyle(color: Color(0xFF2C3E50), fontWeight: FontWeight.bold);
-              }
-              return const TextStyle(color: Colors.grey);
-            }),
-            iconTheme: WidgetStateProperty.resolveWith((states) {
-              if (states.contains(WidgetState.selected)) {
-                return const IconThemeData(color: Color(0xFF2C3E50));
-              }
-              return const IconThemeData(color: Colors.grey);
-            }),
-            elevation: 8,
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2C3E50),
-              foregroundColor: Colors.white,
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-          cardTheme: CardTheme(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            margin: const EdgeInsets.all(8),
-          ),
-          inputDecorationTheme: InputDecorationTheme(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF2C3E50)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF2C3E50), width: 2),
-            ),
-          ),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.theme,
         home: const SplashScreen(),
         debugShowCheckedModeBanner: false,
       ),

@@ -13,6 +13,32 @@ class ProductImage {
   const ProductImage({required this.id, required this.src, this.alt});
 }
 
+class ProductVariation {
+  final String id;
+  final String name;
+  final String value;
+  final String? color;
+
+  const ProductVariation({
+    required this.id,
+    required this.name,
+    required this.value,
+    this.color,
+  });
+}
+
+class ProductAttribute {
+  final String name;
+  final List<String> options;
+  final bool variation;
+
+  const ProductAttribute({
+    required this.name,
+    required this.options,
+    this.variation = false,
+  });
+}
+
 class Product {
   final String id; // Schimbat din int în String pentru compatibilitate
   final String name;
@@ -21,6 +47,12 @@ class Product {
   final ProductImage? image;
   final ProductPriceRange? priceRange;
   final String? slug;
+  final List<ProductAttribute>? attributes;
+  final bool? manageStock;
+  final int? stockQuantity;
+  final String? stockStatus;
+  final List<String>? categories;
+  final List<String>? tags;
 
   const Product({
     required this.id,
@@ -30,6 +62,12 @@ class Product {
     this.image,
     this.priceRange,
     this.slug,
+    this.attributes,
+    this.manageStock,
+    this.stockQuantity,
+    this.stockStatus,
+    this.categories,
+    this.tags,
   });
 
   factory Product.fromStoreApiJson(Map<String, dynamic> json) {

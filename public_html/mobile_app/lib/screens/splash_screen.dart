@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
+import '../widgets/hookbaits_logo.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -73,51 +74,83 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Logo Hookbaits
+                    // Logo Hook_alb-400x122.png pe fundal negru
                     Container(
-                      width: 300,
-                      height: 100,
+                      padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.1),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.white.withOpacity(0.1),
+                            blurRadius: 30,
+                            spreadRadius: 5,
+                          ),
+                        ],
                       ),
                       child: Image.asset(
-                        'assets/logo.png',
+                        'assets/logo.png', // Hook_alb-400x122.png
+                        width: 320,
+                        height: 120,
                         fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Text(
-                            'HOOKBAITS',
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0A7F2E),
-                              letterSpacing: 2,
-                            ),
-                          ),
+                        errorBuilder: (context, error, stackTrace) => const HookbaitsLogoLarge(
+                          backgroundColor: Colors.transparent,
+                          logoColor: Colors.white,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 30),
-                    // Loading indicator
-                    const SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0A7F2E)),
-                        strokeWidth: 3,
+                    const SizedBox(height: 50),
+                    
+                    // Loading indicator cu design profesional
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(50),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              strokeWidth: 2.5,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Text(
+                            'Se încarcă...',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Magazin de pescuit',
+                    
+                    const SizedBox(height: 40),
+                    
+                    // Subtitle profesional
+                    Text(
+                      'PROFESSIONAL FISHING GEAR',
                       style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 12,
                         fontWeight: FontWeight.w300,
+                        letterSpacing: 2,
                       ),
                     ),
                   ],

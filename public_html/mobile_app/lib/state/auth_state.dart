@@ -128,25 +128,11 @@ class AuthState extends ChangeNotifier {
       // Continuă cu demo
     }
 
-    // Demo mode - pentru testare
-    _user = User(
-      id: 1,
-      name: email.split('@')[0],
-      email: email,
-    );
-    _token = 'demo_token_${DateTime.now().millisecondsSinceEpoch}';
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user', jsonEncode({
-      'id': _user!.id,
-      'name': _user!.name,
-      'email': _user!.email,
-    }));
-    await prefs.setString('auth_token', _token!);
-
+    // ❌ AUTENTIFICARE EȘUATĂ - doar conturi reale!
+    print('❌ Autentificare eșuată - cont inexistent sau parolă greșită');
     _isLoading = false;
     notifyListeners();
-    return true;
+    return false;
   }
 
   Future<bool> register(String name, String email, String password) async {

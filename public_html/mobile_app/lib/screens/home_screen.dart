@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../screens/product_list_screen.dart';
-import '../screens/cart_screen.dart';
+import '../screens/enhanced_cart_screen.dart';
 import '../screens/profile_screen.dart';
 import '../state/cart.dart';
 
@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final pages = [
       const ProductListScreen(),
-      const CartScreen(),
+      const EnhancedCartScreen(),
       const ProfileScreen(),
     ];
 

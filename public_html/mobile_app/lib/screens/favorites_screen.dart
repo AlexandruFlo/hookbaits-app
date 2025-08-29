@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import '../state/auth_state.dart';
 import '../models/product.dart';
+import '../state/favorites_state.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -12,197 +11,204 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  List<Product> favorites = [];
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFavorites();
-  }
-
-  Future<void> _loadFavorites() async {
-    await Future.delayed(const Duration(seconds: 1));
-    
-    // Produse favorite de test
-    setState(() {
-      favorites = [
-        Product(
-          id: '1',
-          name: 'Momeala Carp Expert Premium 1kg',
-          permalink: 'https://hookbaits.ro/produs/momeala-carp-expert-1kg',
-          priceRange: ProductPriceRange(minAmount: '45.00', maxAmount: '45.00'),
-          image: ProductImage(id: '1', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Momeala+Premium'),
-          descriptionHtml: 'Momeala premium pentru crap cu aromă intensă.',
-        ),
-        Product(
-          id: '5',
-          name: 'Lanseta Carp Pro Carbon 3.6m',
-          permalink: 'https://hookbaits.ro/produs/lanseta-carp-pro-36m',
-          priceRange: ProductPriceRange(minAmount: '180.00', maxAmount: '180.00'),
-          image: ProductImage(id: '5', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Lanseta+Pro'),
-          descriptionHtml: 'Lanseta profesională din carbon pentru pescuitul crapului.',
-        ),
-        Product(
-          id: '6',
-          name: 'Mulineta Quick Drag System',
-          permalink: 'https://hookbaits.ro/produs/mulineta-quick-drag',
-          priceRange: ProductPriceRange(minAmount: '150.00', maxAmount: '150.00'),
-          image: ProductImage(id: '6', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Mulineta+QD'),
-          descriptionHtml: 'Mulineta cu sistem quick drag pentru pescuit sportiv.',
-        ),
-      ];
-      isLoading = false;
-    });
-  }
-
-  void _removeFavorite(Product product) {
-    setState(() {
-      favorites.removeWhere((p) => p.id == product.id);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${product.name} eliminat din favorite')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthState>();
-    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Produse favorite'),
-        backgroundColor: const Color(0xFF0A7F2E),
+        backgroundColor: const Color(0xFF2C3E50),
         foregroundColor: Colors.white,
-      ),
-      body: !auth.isAuthenticated
-        ? const Center(
-            child: Text('Trebuie să te autentifici pentru a vedea favoritele'),
-          )
-        : isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF0A7F2E)))
-          : favorites.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.favorite_border, size: 100, color: Colors.grey[400]),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Nu ai produse favorite încă',
-                      style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Explorează magazinul și adaugă produse la favorite',
-                      style: TextStyle(color: Colors.grey[500]),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              )
-            : RefreshIndicator(
-                onRefresh: _loadFavorites,
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: favorites.length,
-                  itemBuilder: (context, index) {
-                    final product = favorites[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: product.image?.src != null
-                                  ? CachedNetworkImage(
-                                      imageUrl: product.image!.src!,
-                                      fit: BoxFit.cover,
-                                      placeholder: (context, url) => Container(
-                                        color: Colors.grey[200],
-                                        child: const Icon(Icons.inventory_2_outlined),
-                                      ),
-                                      errorWidget: (context, url, error) => Container(
-                                        color: Colors.grey[200],
-                                        child: const Icon(Icons.inventory_2_outlined),
-                                      ),
-                                    )
-                                  : Container(
-                                      color: Colors.grey[200],
-                                      child: const Icon(Icons.inventory_2_outlined),
-                                    ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    product.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    product.descriptionHtml ?? 'Descriere produs',
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 14,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    '${product.priceRange?.minAmount ?? '0'} Lei',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF0A7F2E),
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Column(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.favorite, color: Colors.red),
-                                  onPressed: () => _removeFavorite(product),
-                                ),
-                                const SizedBox(height: 8),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('${product.name} adăugat în coș')),
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF0A7F2E),
-                                    foregroundColor: Colors.white,
-                                    minimumSize: const Size(60, 32),
-                                  ),
-                                  child: const Text('Coș', style: TextStyle(fontSize: 12)),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+        actions: [
+          Consumer<FavoritesState>(
+            builder: (context, favorites, child) {
+              if (favorites.favorites.isNotEmpty) {
+                return IconButton(
+                  icon: const Icon(Icons.clear_all),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Golește favorite'),
+                        content: const Text('Ești sigur că vrei să elimini toate produsele favorite?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Anulează'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              favorites.clearFavorites();
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Șterge tot'),
+                          ),
+                        ],
                       ),
                     );
                   },
-                ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        ],
+      ),
+      body: Consumer<FavoritesState>(
+        builder: (context, favorites, child) {
+          if (favorites.favorites.isEmpty) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.favorite_border, size: 100, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text(
+                    'Nu ai produse favorite',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Apasă pe inimioara de pe produse pentru a le adăuga la favorite',
+                    style: TextStyle(color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
+            );
+          }
+
+          return GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.75,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+            ),
+            itemCount: favorites.favorites.length,
+            itemBuilder: (context, index) {
+              final product = favorites.favorites[index];
+              final imageUrl = product.image?.src;
+              final price = product.priceRange?.minAmount ?? '';
+
+              return Card(
+                elevation: 4,
+                margin: const EdgeInsets.all(6),
+                clipBehavior: Clip.antiAlias,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Stack(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: Container(
+                            width: double.infinity,
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Color(0xFFF8F9FA), Color(0xFFE9ECEF)],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                            ),
+                            child: imageUrl == null
+                                ? const Icon(Icons.inventory_2_outlined, size: 60, color: Color(0xFF2C3E50))
+                                : Image.network(
+                                    imageUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(
+                                      Icons.inventory_2_outlined,
+                                      size: 60,
+                                      color: Color(0xFF2C3E50),
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  product.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const Spacer(),
+                                if (price.isNotEmpty)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF2C3E50),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      '$price Lei',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Buton eliminare din favorite
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: InkWell(
+                        onTap: () async {
+                          await favorites.toggleFavorite(product);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('${product.name} eliminat din favorite'),
+                                backgroundColor: Colors.grey[600],
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.favorite,
+                            color: Colors.red,
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../api/woocommerce_store_api.dart';
+import '../state/favorites_state.dart';
 import '../models/product.dart';
 import '../state/cart.dart';
 import 'product_screen.dart';
+import 'search_screen.dart';
+import '../widgets/hookbaits_logo.dart';
+import '../theme/app_theme.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -113,26 +117,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            Icon(Icons.waves_outlined, color: Colors.white),
-            const SizedBox(width: 8),
-            const Text(
-              'HOOKBAITS',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ],
-        ),
+        title: const HookbaitsLogoCompact(),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              // TODO: Implementează căutarea
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Căutare în dezvoltare')),
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SearchScreen()),
               );
             },
           ),
@@ -284,35 +275,45 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: InkWell(
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${p.name} adăugat la favorite'),
-                            backgroundColor: Colors.red[600],
-                            duration: const Duration(seconds: 2),
+                    child: Consumer<FavoritesState>(
+                      builder: (context, favorites, child) {
+                        final isFavorite = favorites.isFavorite(p);
+                        return InkWell(
+                          onTap: () async {
+                            await favorites.toggleFavorite(p);
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(isFavorite 
+                                      ? '${p.name} eliminat din favorite' 
+                                      : '${p.name} adăugat la favorite'),
+                                  backgroundColor: isFavorite ? Colors.grey[600] : Colors.red[600],
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              isFavorite ? Icons.favorite : Icons.favorite_border,
+                              color: Colors.red,
+                              size: 18,
+                            ),
                           ),
                         );
                       },
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.favorite_border,
-                          color: Colors.red,
-                          size: 18,
-                        ),
-                      ),
                     ),
                   ),
                 ],
