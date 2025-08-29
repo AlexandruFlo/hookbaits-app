@@ -12,12 +12,16 @@ class PremiumProductCard extends StatefulWidget {
   final Product product;
   final String? imageUrl;
   final String price;
+  final bool? isFavorite;
+  final VoidCallback? onFavoriteToggle;
 
   const PremiumProductCard({
     super.key,
     required this.product,
     this.imageUrl,
     required this.price,
+    this.isFavorite,
+    this.onFavoriteToggle,
   });
 
   @override
@@ -510,7 +514,7 @@ class _PremiumProductCardState extends State<PremiumProductCard>
   Widget _buildFavoriteButton() {
     return Consumer<FavoritesState>(
       builder: (context, favorites, child) {
-        final isFavorite = favorites.isFavorite(widget.product);
+        final isFavorite = widget.isFavorite ?? favorites.isFavorite(widget.product);
         return AnimatedBuilder(
           animation: _favoriteScale,
           builder: (context, child) {
@@ -548,33 +552,37 @@ class _PremiumProductCardState extends State<PremiumProductCard>
                   child: InkWell(
                     onTap: () async {
                       _onFavoriteTap();
-                      await favorites.toggleFavorite(widget.product);
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Row(
-                              children: [
-                                Icon(
-                                  isFavorite ? Icons.heart_broken : Icons.favorite,
-                                  color: AppColors.goldenHour,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    isFavorite 
-                                        ? '${widget.product.name} eliminat din favorite' 
-                                        : '${widget.product.name} adăugat la favorite',
+                      if (widget.onFavoriteToggle != null) {
+                        widget.onFavoriteToggle!();
+                      } else {
+                        await favorites.toggleFavorite(widget.product);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  Icon(
+                                    isFavorite ? Icons.heart_broken : Icons.favorite,
+                                    color: AppColors.goldenHour,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      isFavorite 
+                                          ? '${widget.product.name} eliminat din favorite' 
+                                          : '${widget.product.name} adăugat la favorite',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor: isFavorite ? AppColors.stormyWater : AppColors.coral,
+                              duration: const Duration(seconds: 2),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                            backgroundColor: isFavorite ? AppColors.stormyWater : AppColors.coral,
-                            duration: const Duration(seconds: 2),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        );
+                          );
+                        }
                       }
                     },
                     borderRadius: BorderRadius.circular(22),

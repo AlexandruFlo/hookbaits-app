@@ -364,14 +364,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _originalBuild() {
-    return Scaffold(
-      body: Column(
-      body: Column(
-        children: [
-          // Câmp de căutare
-          Container(
-            padding: const EdgeInsets.all(16),
+
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
