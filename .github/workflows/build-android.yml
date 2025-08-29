@@ -25,42 +25,64 @@ jobs:
           flutter-version: '3.22.2'
 
       - name: 🔧 Create Base Flutter Project
-        working-directory: public_html
+        working-directory: public_html/public_html
         run: |
           flutter create temp_app --org com.hookbaits --project-name hookbaits_shop --platforms=android
 
       - name: 📁 Copy Real App Code
-        working-directory: public_html
+        working-directory: public_html/public_html
         run: |
           # Copiază TOATE fișierele aplicației reale
+          echo "📂 Copiez lib folder..."
           cp -r mobile_app/lib/* temp_app/lib/
-          cp -r mobile_app/assets/* temp_app/assets/ 2>/dev/null || mkdir -p temp_app/assets
+          
+          echo "🖼️ Copiez assets folder..."
+          mkdir -p temp_app/assets
+          cp -r mobile_app/assets/* temp_app/assets/
+          
+          echo "📋 Copiez pubspec.yaml..."
           cp mobile_app/pubspec.yaml temp_app/pubspec.yaml
           
+          echo "🔍 Verifică assets copiați..."
+          ls -la temp_app/assets/
+          
       - name: 📦 Install Dependencies
-        working-directory: public_html/temp_app
+        working-directory: public_html/public_html/temp_app
         run: |
           flutter pub get
           
       - name: 🎨 Generate App Icons (Hook Logo on Black)
-        working-directory: public_html/temp_app
+        working-directory: public_html/public_html/temp_app
         run: |
-          echo "🎯 Verifică fișierele assets..."
-          ls -la assets/
+          echo "🎯 Verifică structura proiectului..."
+          pwd
+          ls -la
+          
+          echo "🖼️ Verifică fișierele assets..."
+          ls -la assets/ || echo "❌ Folderul assets nu există!"
+          
+          echo "📋 Verifică pubspec.yaml..."
+          cat pubspec.yaml | grep -A 10 flutter_launcher_icons || echo "❌ Configurația flutter_launcher_icons lipsește!"
           
           echo "📦 Adaugă flutter_launcher_icons..."
           flutter pub add flutter_launcher_icons
           
           echo "🎨 Generează iconița HOOKBAITS cu fundal negru..."
-          flutter pub run flutter_launcher_icons:main
-          
-          echo "🔍 Verifică iconițele generate..."
-          find android/app/src/main/res -name "*launcher*" -type f | head -10
-          
-          echo "✅ Iconița HOOKBAITS cu logo pe fundal negru a fost generată!"
+          if [ -f "assets/logo.png" ]; then
+            echo "✅ Logo-ul Hook găsit, generez iconița..."
+            flutter pub run flutter_launcher_icons:main
+            echo "🔍 Verifică iconițele generate..."
+            find android/app/src/main/res -name "*launcher*" -type f | head -10
+            echo "✅ Iconița HOOKBAITS cu logo pe fundal negru a fost generată!"
+          else
+            echo "❌ EROARE: assets/logo.png nu există!"
+            echo "📁 Conținutul folderului assets:"
+            ls -la assets/ || echo "Folderul assets nu există deloc!"
+            exit 1
+          fi
 
       - name: 🔨 Build APK (With Real Code)
-        working-directory: public_html/temp_app
+        working-directory: public_html/public_html/temp_app
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
         run: |
@@ -71,4 +93,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: hookbaits-app-100-functional
-          path: public_html/temp_app/build/app/outputs/**/*.apk
+          path: public_html/public_html/temp_app/build/app/outputs/**/*.apk
