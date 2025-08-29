@@ -1,4 +1,4 @@
-name: Android Build
+name: 🚀 Build HOOKBAITS App (100% Functional)
 
 on:
   push:
@@ -9,47 +9,66 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: ☕ Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: 17
-          distribution: temurin
+          java-version: '17'
+          distribution: 'temurin'
 
-      - name: Set up Flutter
+      - name: 🦋 Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
-          flutter-version: 3.22.2
+          channel: 'stable'
+          flutter-version: '3.22.2'
 
-      - name: Create Flutter project with Android support
+      - name: 🔧 Create Base Flutter Project
+        working-directory: public_html
         run: |
           flutter create temp_app --org com.hookbaits --project-name hookbaits_shop --platforms=android
 
-      - name: Copy our app files to Flutter project
+      - name: 📁 Copy Real App Code
+        working-directory: public_html
         run: |
-          cp -r public_html/mobile_app/lib/* temp_app/lib/
-          cp public_html/mobile_app/pubspec.yaml temp_app/
-          cp -r public_html/mobile_app/assets temp_app/ || true
+          # Copiază TOATE fișierele aplicației reale
+          cp -r mobile_app/lib/* temp_app/lib/
+          cp -r mobile_app/assets/* temp_app/assets/ 2>/dev/null || mkdir -p temp_app/assets
+          cp mobile_app/pubspec.yaml temp_app/pubspec.yaml
           
-      - name: Add missing dependencies
-        working-directory: temp_app
+      - name: 📦 Install Dependencies
+        working-directory: public_html/temp_app
         run: |
-          flutter pub add shared_preferences
+          flutter pub get
+          
+      - name: 🎨 Generate App Icons (Hook Logo on Black)
+        working-directory: public_html/temp_app
+        run: |
+          echo "🎯 Verifică fișierele assets..."
+          ls -la assets/
+          
+          echo "📦 Adaugă flutter_launcher_icons..."
+          flutter pub add flutter_launcher_icons
+          
+          echo "🎨 Generează iconița HOOKBAITS cu fundal negru..."
+          flutter pub run flutter_launcher_icons:main
+          
+          echo "🔍 Verifică iconițele generate..."
+          find android/app/src/main/res -name "*launcher*" -type f | head -10
+          
+          echo "✅ Iconița HOOKBAITS cu logo pe fundal negru a fost generată!"
 
-      - name: Get Flutter dependencies
-        working-directory: temp_app
-        run: flutter pub get
+      - name: 🔨 Build APK (With Real Code)
+        working-directory: public_html/temp_app
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+        run: |
+          if [ -z "$BASE_URL" ]; then BASE_URL=https://hookbaits.ro; fi
+          flutter build apk --release --dart-define=BASE_URL=$BASE_URL
 
-      - name: Build Android APK
-        working-directory: temp_app
-        run: flutter build apk --debug
-
-      - name: Upload APK artifact
+      - name: 📤 Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: hookbaits-android-app
-          path: temp_app/build/app/outputs/flutter-apk/app-debug.apk
-          retention-days: 30
+          name: hookbaits-app-100-functional
+          path: public_html/temp_app/build/app/outputs/**/*.apk
