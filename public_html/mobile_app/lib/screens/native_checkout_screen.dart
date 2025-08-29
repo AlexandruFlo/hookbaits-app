@@ -540,7 +540,7 @@ class _NativeCheckoutScreenState extends State<NativeCheckoutScreen> {
     }
     
     // 6. Pentru plățile cu cardul, validări suplimentare
-    if (_selectedPaymentMethod == 'stripe') {
+    if (_selectedPaymentMethod == 'card') {
       final confirmed = await _confirmCardPayment();
       if (!confirmed) return;
     }
@@ -570,12 +570,19 @@ class _NativeCheckoutScreenState extends State<NativeCheckoutScreen> {
       };
       
       // Creează comanda prin WooCommerce API
+      String status = 'pending'; // Default pentru comenzi noi
+      if (_selectedPaymentMethod == 'cod') {
+        status = 'processing'; // Ramburs = procesare directă
+      } else if (_selectedPaymentMethod == 'card') {
+        status = 'processing'; // Cardul este "plătit" în simulare
+      }
+      
       final result = await WooCommerceAPI.createOrder(
         lineItems: lineItems,
         billing: billing,
         shipping: billing, // Folosește aceeași adresă pentru livrare
         paymentMethod: _selectedPaymentMethod,
-        status: _selectedPaymentMethod == 'cod' ? 'processing' : 'pending',
+        status: status,
       );
       
       if (result != null) {

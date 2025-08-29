@@ -81,7 +81,37 @@ class _ProductListScreenState extends State<ProductListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const HookbaitsLogoCompact(),
+        title: Row(
+          children: [
+            // Logo Hook_alb-400x122.png în AppBar
+            Container(
+              height: 40,
+              width: 80,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.asset(
+                  'assets/logo.png', // Hook_alb-400x122.png
+                  height: 40,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: Colors.black,
+                    child: const Icon(
+                      Icons.phishing_outlined,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(child: HookbaitsLogoCompact()),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -102,63 +132,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
           });
           await _load();
         },
-        child: Column(
-          children: [
-            // Banner cu logo-ul Hook_alb-400x122.png
-            Container(
-              width: double.infinity,
-              height: 120,
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  'assets/logo.png', // Hook_alb-400x122.png
-                  height: 80,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: Colors.black,
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.phishing_outlined, color: Colors.white, size: 40),
-                        SizedBox(height: 8),
-                        Text(
-                          'HOOKBAITS',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 2,
-                          ),
-                        ),
-                        Text(
-                          'PROFESSIONAL FISHING GEAR',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 10,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // Lista de produse
-            Expanded(
-              child: GridView.builder(
+        child: GridView.builder(
           controller: scrollController,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
@@ -340,9 +314,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
               ),
             );
           },
-        ),
-            ),
-          ],
         ),
       ),
     );
