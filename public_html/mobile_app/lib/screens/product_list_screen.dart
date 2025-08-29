@@ -110,7 +110,32 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Hookbaits')),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            Icon(Icons.waves_outlined, color: Colors.white),
+            const SizedBox(width: 8),
+            const Text(
+              'HOOKBAITS',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              // TODO: Implementează căutarea
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Căutare în dezvoltare')),
+              );
+            },
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           setState(() {
@@ -135,27 +160,80 @@ class _ProductListScreenState extends State<ProductListScreen> {
             final imageUrl = p.image?.src;
             final price = p.priceRange?.minAmount ?? '';
             return Card(
-              margin: const EdgeInsets.all(8),
+              elevation: 4,
+              margin: const EdgeInsets.all(6),
               clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: InkWell(
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProductScreen(productId: p.id))),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: imageUrl == null
-                          ? const ColoredBox(color: Color(0x11000000))
-                          : CachedNetworkImage(imageUrl: imageUrl, fit: BoxFit.cover),
+                      flex: 3,
+                      child: Container(
+                        width: double.infinity,
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Color(0xFFF8F9FA), Color(0xFFE9ECEF)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                        child: imageUrl == null
+                            ? const Icon(Icons.inventory_2_outlined, size: 60, color: Color(0xFF0A7F2E))
+                            : CachedNetworkImage(
+                                imageUrl: imageUrl, 
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator(color: Color(0xFF0A7F2E)),
+                                ),
+                                errorWidget: (context, url, error) => const Icon(
+                                  Icons.inventory_2_outlined, 
+                                  size: 60, 
+                                  color: Color(0xFF0A7F2E),
+                                ),
+                              ),
+                      ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(p.name, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    Expanded(
+                      flex: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              p.name, 
+                              maxLines: 2, 
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                height: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            if (price.isNotEmpty) Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0A7F2E),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                '$price Lei',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(price.isNotEmpty ? 'Lei $price' : '' , style: const TextStyle(fontWeight: FontWeight.bold)),
-                    ),
-                    const SizedBox(height: 8),
                   ],
                 ),
               ),
