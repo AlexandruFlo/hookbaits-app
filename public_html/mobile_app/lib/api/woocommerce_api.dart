@@ -62,6 +62,12 @@ class WooCommerceAPI {
         'status': status,
       };
 
+      // Verifică dacă cheile sunt configurate
+      if (!WooCommerceConfig.isConfigured) {
+        print('❌ Cheile WooCommerce nu sunt configurate!');
+        throw Exception('Cheile WooCommerce nu sunt configurate. Verificați fișierul woocommerce_config.dart');
+      }
+
       print('🚀 Încerc să creez comanda în WooCommerce...');
       print('📦 Date comandă: ${jsonEncode(orderData)}');
       print('🔗 URL: $baseUrl/orders');
@@ -80,50 +86,18 @@ class WooCommerceAPI {
         return jsonDecode(response.body);
       } else if (response.statusCode == 401) {
         print('❌ Eroare autentificare - chei WooCommerce invalide');
-        // Fallback pentru demo
-        return _createMockOrder(orderData);
+        throw Exception('Cheile WooCommerce nu sunt configurate corect. Verificați fișierul woocommerce_config.dart');
       } else {
         print('❌ Eroare la crearea comenzii: ${response.statusCode} - ${response.body}');
-        // Fallback pentru demo
-        return _createMockOrder(orderData);
+        throw Exception('Nu s-a putut crea comanda: ${response.statusCode}');
       }
     } catch (e) {
       print('❌ Eroare de rețea: $e');
-      // Fallback pentru demo
-      return _createMockOrder({
-        'billing': billing,
-        'line_items': lineItems,
-        'payment_method': paymentMethod,
-      });
+      throw Exception('Eroare de conexiune: $e');
     }
   }
 
-  // Fallback pentru demonstrație când API-ul nu funcționează
-  static Map<String, dynamic> _createMockOrder(Map<String, dynamic> orderData) {
-    final orderId = DateTime.now().millisecondsSinceEpoch;
-    final orderNumber = 'HB${orderId.toString().substring(8)}';
-    
-    final lineItems = orderData['line_items'] as List<Map<String, dynamic>>? ?? [];
-    final total = lineItems.fold<double>(0.0, (sum, item) {
-      final quantity = item['quantity'] ?? 1;
-      // Estimez prețul pentru demo
-      return sum + (quantity * 50.0); // 50 Lei per produs în medie
-    });
 
-    print('📱 Comanda simulată creată cu succes (pentru demonstrație)');
-    
-    return {
-      'id': orderId,
-      'number': orderNumber,
-      'status': orderData['payment_method'] == 'cod' ? 'processing' : 'pending',
-      'total': total.toStringAsFixed(2),
-      'billing': orderData['billing'],
-      'line_items': lineItems,
-      'date_created': DateTime.now().toIso8601String(),
-      'payment_method': orderData['payment_method'],
-      'note': 'Comandă demonstrativă - pentru funcționare completă configurați cheile WooCommerce în woocommerce_config.dart'
-    };
-  }
 
   // Obține comenzile utilizatorului
   static Future<List<dynamic>> getUserOrders(int customerId) async {

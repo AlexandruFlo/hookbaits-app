@@ -47,11 +47,27 @@ class _ProductListScreenState extends State<ProductListScreen> {
         if (newItems.isEmpty) hasMore = false;
       });
     } catch (e) {
-      // Dacă API-ul nu funcționează, încarcă produse de test
-      _loadTestProducts();
+      // API-ul nu funcționează - afișează eroare reală
+      print('❌ Eroare încărcare produse: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Conexiune eșuată, se încarcă produse de test'))
+          SnackBar(
+            content: Text('Eroare la încărcarea produselor. Verificați conexiunea la internet și configurația API.'),
+            backgroundColor: Colors.red[600],
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'REÎNCERCARE',
+              textColor: Colors.white,
+              onPressed: () {
+                setState(() {
+                  page = 1;
+                  products.clear();
+                  hasMore = true;
+                });
+                _load();
+              },
+            ),
+          ),
         );
       }
     } finally {
@@ -59,59 +75,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     }
   }
 
-  void _loadTestProducts() {
-    if (products.isEmpty) {
-      final testProducts = [
-        Product(
-          id: '1',
-          name: 'Momeala Carp Expert 1kg',
-          permalink: 'https://hookbaits.ro/produs/momeala-carp-expert-1kg',
-          priceRange: ProductPriceRange(minAmount: '45', maxAmount: '45'),
-          image: ProductImage(id: '1', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Momeala+1'),
-        ),
-        Product(
-          id: '2',
-          name: 'Boilies Strawberry 20mm',
-          permalink: 'https://hookbaits.ro/produs/boilies-strawberry-20mm',
-          priceRange: ProductPriceRange(minAmount: '32', maxAmount: '32'),
-          image: ProductImage(id: '2', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Boilies'),
-        ),
-        Product(
-          id: '3',
-          name: 'Carlig Method Feeder',
-          permalink: 'https://hookbaits.ro/produs/carlig-method-feeder',
-          priceRange: ProductPriceRange(minAmount: '18', maxAmount: '18'),
-          image: ProductImage(id: '3', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Carlig'),
-        ),
-        Product(
-          id: '4',
-          name: 'Fir Monofilament 0.25mm',
-          permalink: 'https://hookbaits.ro/produs/fir-monofilament-025mm',
-          priceRange: ProductPriceRange(minAmount: '25', maxAmount: '25'),
-          image: ProductImage(id: '4', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Fir'),
-        ),
-        Product(
-          id: '5',
-          name: 'Lanseta Carp Pro 3.6m',
-          permalink: 'https://hookbaits.ro/produs/lanseta-carp-pro-36m',
-          priceRange: ProductPriceRange(minAmount: '180', maxAmount: '180'),
-          image: ProductImage(id: '5', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Lanseta'),
-        ),
-        Product(
-          id: '6',
-          name: 'Mulineta Quick Drag',
-          permalink: 'https://hookbaits.ro/produs/mulineta-quick-drag',
-          priceRange: ProductPriceRange(minAmount: '150', maxAmount: '150'),
-          image: ProductImage(id: '6', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Mulineta'),
-        ),
-      ];
-      
-      setState(() {
-        products.addAll(testProducts);
-        hasMore = false;
-      });
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {

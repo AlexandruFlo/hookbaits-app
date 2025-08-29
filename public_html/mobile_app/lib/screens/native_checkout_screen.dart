@@ -110,6 +110,79 @@ class _NativeCheckoutScreenState extends State<NativeCheckoutScreen> {
                       ),
                       maxLines: 3,
                     ),
+                    const SizedBox(height: 24),
+
+                    // Termeni și condiții
+                    Card(
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            CheckboxListTile(
+                              value: _agreedToTerms,
+                              onChanged: (value) {
+                                setState(() {
+                                  _agreedToTerms = value ?? false;
+                                });
+                              },
+                              title: RichText(
+                                text: TextSpan(
+                                  style: const TextStyle(color: Colors.black87, fontSize: 14),
+                                  children: [
+                                    const TextSpan(text: 'Am citit și accept '),
+                                    TextSpan(
+                                      text: 'termenii și condițiile',
+                                      style: TextStyle(
+                                        color: const Color(0xFF2C3E50),
+                                        fontWeight: FontWeight.w600,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                    const TextSpan(text: ' *'),
+                                  ],
+                                ),
+                              ),
+                              controlAffinity: ListTileControlAffinity.leading,
+                              activeColor: const Color(0xFF2C3E50),
+                              dense: true,
+                            ),
+                            if (!_agreedToTerms)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 16, bottom: 8),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.error_outline, color: Colors.red[700], size: 16),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Acceptarea termenilor este obligatorie',
+                                      style: TextStyle(
+                                        color: Colors.red[700],
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            CheckboxListTile(
+                              value: _wantsNewsletter,
+                              onChanged: (value) {
+                                setState(() {
+                                  _wantsNewsletter = value ?? false;
+                                });
+                              },
+                              title: const Text(
+                                'Doresc să primesc newsletter cu oferte și noutăți',
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              controlAffinity: ListTileControlAffinity.leading,
+                              activeColor: const Color(0xFF2C3E50),
+                              dense: true,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 32),
                   ],
                 ),
