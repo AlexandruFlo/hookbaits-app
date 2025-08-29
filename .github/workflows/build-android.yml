@@ -24,17 +24,27 @@ jobs:
           channel: stable
           flutter-version: 3.22.2
 
+      - name: Create Flutter project with Android support
+        run: |
+          flutter create temp_app --org com.hookbaits --project-name hookbaits_shop --platforms=android
+
+      - name: Copy our app files to Flutter project
+        run: |
+          cp -r public_html/mobile_app/lib/* temp_app/lib/
+          cp public_html/mobile_app/pubspec.yaml temp_app/
+          cp -r public_html/mobile_app/assets temp_app/ || true
+
       - name: Get Flutter dependencies
-        working-directory: public_html/mobile_app
+        working-directory: temp_app
         run: flutter pub get
 
       - name: Build Android APK
-        working-directory: public_html/mobile_app
+        working-directory: temp_app
         run: flutter build apk --debug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: hookbaits-android-app
-          path: public_html/mobile_app/build/app/outputs/flutter-apk/app-debug.apk
+          path: temp_app/build/app/outputs/flutter-apk/app-debug.apk
           retention-days: 30
