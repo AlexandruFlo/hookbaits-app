@@ -25,11 +25,12 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon.png
+    - assets/logo.png
 
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: assets/icon.png
-  adaptive_icon_background: "#0A7F2E"
-  adaptive_icon_foreground: assets/icon.png
+  image_path: assets/logo.png
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: assets/logo.png
 

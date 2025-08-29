@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'config.dart';
 import 'state/cart.dart';
 import 'state/auth_state.dart';
-import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,7 +83,7 @@ class HookbaitsApp extends StatelessWidget {
           ),
           useMaterial3: true,
         ),
-        home: const HomeScreen(),
+        home: const SplashScreen(),
         debugShowCheckedModeBanner: false,
       ),
     );

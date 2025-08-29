@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../api/woocommerce_store_api.dart';
 import '../models/product.dart';
+import '../state/cart.dart';
 import 'product_screen.dart';
 
 class ProductListScreen extends StatefulWidget {
@@ -215,20 +217,59 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            if (price.isNotEmpty) Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0A7F2E),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                '$price Lei',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  fontSize: 13,
+                            if (price.isNotEmpty) Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0A7F2E),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    '$price Lei',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                InkWell(
+                                  onTap: () {
+                                    final cart = context.read<CartState>();
+                                    cart.add(p);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('${p.name} adăugat în coș'),
+                                        backgroundColor: const Color(0xFF0A7F2E),
+                                        duration: const Duration(seconds: 2),
+                                        action: SnackBarAction(
+                                          label: 'VEZI',
+                                          textColor: Colors.white,
+                                          onPressed: () {
+                                            // Navighează la coș (tab index 1)
+                                            DefaultTabController.of(context)?.animateTo(1);
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: const Color(0xFF0A7F2E)),
+                                    ),
+                                    child: const Icon(
+                                      Icons.add_shopping_cart,
+                                      color: Color(0xFF0A7F2E),
+                                      size: 16,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),

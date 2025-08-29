@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../config.dart';
 import '../state/cart.dart';
 import '../state/auth_state.dart';
-import 'checkout_webview_screen.dart';
+import 'native_checkout_screen.dart';
 import 'auth_screen.dart';
 
 class CartScreen extends StatelessWidget {
@@ -194,33 +194,40 @@ class CartScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     if (!auth.isAuthenticated) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Trebuie să te autentifici pentru a comanda')),
+                      // Poți comanda și fără cont, doar completezi datele
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Comandă fără cont'),
+                          content: const Text('Poți plasa comanda completând datele în următorul pas, sau te poți autentifica pentru o experiență mai rapidă.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (_) => const AuthScreen(),
+                                ));
+                              },
+                              child: const Text('Autentificare'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (_) => const NativeCheckoutScreen(),
+                                ));
+                              },
+                              child: const Text('Continuă'),
+                            ),
+                          ],
+                        ),
                       );
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) => const AuthScreen(),
-                      ));
                       return;
                     }
                     
-                    // Construim URL-ul de checkout cu produsele din coș
-                    final cartData = cart.items.map((item) => 
-                      'add-to-cart=${item.product.id}&quantity=${item.quantity}'
-                    ).join('&');
-                    
-                    final checkoutUrl = '${AppConfig.baseUrl}/checkout/?$cartData&utm_source=app&user_email=${Uri.encodeComponent(auth.user?.email ?? '')}';
-                    
+                    // Navighează direct la checkout-ul nativ
                     Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => CheckoutWebViewScreen(
-                        checkoutUrl: checkoutUrl,
-                        onOrderComplete: () {
-                          cart.clear();
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Comandă finalizată cu succes!')),
-                          );
-                        },
-                      ),
+                      builder: (_) => const NativeCheckoutScreen(),
                     ));
                   },
                   style: ElevatedButton.styleFrom(

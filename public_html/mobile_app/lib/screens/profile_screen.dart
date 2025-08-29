@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/auth_state.dart';
 import 'auth_screen.dart';
+import 'orders_screen.dart';
+import 'favorites_screen.dart';
+import 'addresses_screen.dart';
+import 'settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -89,9 +93,9 @@ class ProfileScreen extends StatelessWidget {
                     title: const Text('Comenzile mele'),
                     trailing: const Icon(Icons.arrow_forward_ios),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Funcție în dezvoltare')),
-                      );
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => const OrdersScreen(),
+                      ));
                     },
                   ),
                   const Divider(height: 1),
@@ -100,9 +104,9 @@ class ProfileScreen extends StatelessWidget {
                     title: const Text('Produse favorite'),
                     trailing: const Icon(Icons.arrow_forward_ios),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Funcție în dezvoltare')),
-                      );
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => const FavoritesScreen(),
+                      ));
                     },
                   ),
                   const Divider(height: 1),
@@ -111,9 +115,9 @@ class ProfileScreen extends StatelessWidget {
                     title: const Text('Adrese de livrare'),
                     trailing: const Icon(Icons.arrow_forward_ios),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Funcție în dezvoltare')),
-                      );
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => const AddressesScreen(),
+                      ));
                     },
                   ),
                   const Divider(height: 1),
@@ -122,9 +126,9 @@ class ProfileScreen extends StatelessWidget {
                     title: const Text('Setări'),
                     trailing: const Icon(Icons.arrow_forward_ios),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Funcție în dezvoltare')),
-                      );
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => const SettingsScreen(),
+                      ));
                     },
                   ),
                 ],

@@ -49,10 +49,21 @@ class Product {
       priceRange: prices == null
           ? null
           : ProductPriceRange(
-              minAmount: prices['min_price']?.toString() ?? prices['price']?.toString() ?? '',
-              maxAmount: prices['max_price']?.toString() ?? prices['price']?.toString() ?? '',
+              minAmount: _formatPrice(prices['min_price']?.toString() ?? prices['price']?.toString() ?? ''),
+              maxAmount: _formatPrice(prices['max_price']?.toString() ?? prices['price']?.toString() ?? ''),
             ),
     );
+  }
+
+  static String _formatPrice(String price) {
+    if (price.isEmpty) return '';
+    
+    // Convertește din cenți în Lei (împarte la 100)
+    final priceInCents = double.tryParse(price);
+    if (priceInCents == null) return price;
+    
+    final priceInLei = priceInCents / 100;
+    return priceInLei.toStringAsFixed(2);
   }
 }
 
