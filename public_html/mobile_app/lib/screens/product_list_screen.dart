@@ -102,7 +102,63 @@ class _ProductListScreenState extends State<ProductListScreen> {
           });
           await _load();
         },
-        child: GridView.builder(
+        child: Column(
+          children: [
+            // Banner cu logo-ul Hook_alb-400x122.png
+            Container(
+              width: double.infinity,
+              height: 120,
+              margin: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  'assets/logo.png', // Hook_alb-400x122.png
+                  height: 80,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: Colors.black,
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.phishing_outlined, color: Colors.white, size: 40),
+                        SizedBox(height: 8),
+                        Text(
+                          'HOOKBAITS',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                        Text(
+                          'PROFESSIONAL FISHING GEAR',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 10,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Lista de produse
+            Expanded(
+              child: GridView.builder(
           controller: scrollController,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
@@ -284,6 +340,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
               ),
             );
           },
+        ),
+              ),
+            ],
+          ),
         ),
       ),
     );

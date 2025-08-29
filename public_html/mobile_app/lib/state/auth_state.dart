@@ -149,6 +149,15 @@ class AuthState extends ChangeNotifier {
       print('🔄 Încerc să creez utilizator în WordPress/WooCommerce...');
       print('📧 Email: $email');
       print('👤 Nume: $firstName $lastName');
+      
+      // Verifică dacă cheile sunt configurate
+      if (!WooCommerceConfig.isConfigured) {
+        print('❌ Cheile WooCommerce nu sunt configurate!');
+        print('🔧 Urmează instrucțiunile din URGENT_API_KEYS_SETUP.md');
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
 
       // 1. Încearcă să creeze utilizatorul în WooCommerce
       final customerData = await _createWooCommerceCustomer(firstName, lastName, email, password);
