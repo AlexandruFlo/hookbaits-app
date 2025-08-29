@@ -10,12 +10,21 @@ class CartItem {
 
   double get unitPrice => double.tryParse(product.priceRange?.minAmount ?? '0') ?? 0.0;
   double get totalPrice => unitPrice * quantity;
+  
+  CartItem copyWith({int? quantity}) {
+    return CartItem(
+      product: product,
+      quantity: quantity ?? this.quantity,
+    );
+  }
 }
 
 class CartState extends ChangeNotifier {
   final List<CartItem> _items = [];
 
   List<CartItem> get items => List.unmodifiable(_items);
+  
+  int get itemCount => _items.fold(0, (sum, item) => sum + item.quantity);
 
   double get total => _items.fold(0.0, (sum, item) => sum + item.totalPrice);
 
