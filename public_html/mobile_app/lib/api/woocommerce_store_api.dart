@@ -48,10 +48,23 @@ class WooStoreApiClient {
       }).timeout(const Duration(seconds: 10));
       
       print('📡 Store API răspuns: ${storeRes.statusCode}');
+      print('📄 Store API body length: ${storeRes.body.length}');
       
       if (storeRes.statusCode == 200) {
         final List<dynamic> data = jsonDecode(storeRes.body);
         print('✅ Store API - Produse găsite: ${data.length}');
+        
+        // Debug primul produs pentru a vedea structura
+        if (data.isNotEmpty) {
+          final firstProduct = data.first;
+          print('🔍 Primul produs debug:');
+          print('   - ID: ${firstProduct['id']}');
+          print('   - Nume: ${firstProduct['name']}');
+          print('   - Preț: ${firstProduct['prices']?['price']}');
+          print('   - Min preț: ${firstProduct['prices']?['min_price']}');
+          print('   - Max preț: ${firstProduct['prices']?['max_price']}');
+        }
+        
         return data.map((e) => Product.fromStoreApiJson(e as Map<String, dynamic>)).toList();
       }
       

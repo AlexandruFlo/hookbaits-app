@@ -130,12 +130,12 @@ class Product {
   static String _formatPrice(String price) {
     if (price.isEmpty) return '';
     
-    // Convertește din cenți în Lei (împarte la 100)
-    final priceInCents = double.tryParse(price);
-    if (priceInCents == null) return price;
+    // Store API returnează prețurile deja în Lei, nu în cenți!
+    final priceValue = double.tryParse(price);
+    if (priceValue == null) return price;
     
-    final priceInLei = priceInCents / 100;
-    return priceInLei.toStringAsFixed(2);
+    // Returnează prețul direct cu 2 decimale
+    return priceValue.toStringAsFixed(2);
   }
 }
 

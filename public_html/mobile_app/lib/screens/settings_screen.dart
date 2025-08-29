@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/auth_state.dart';
+import '../theme/app_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -21,17 +22,155 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final auth = context.watch<AuthState>();
     
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Setări'),
-        backgroundColor: const Color(0xFF0A7F2E),
-        foregroundColor: Colors.white,
-      ),
-      body: !auth.isAuthenticated
-        ? const Center(
-            child: Text('Trebuie să te autentifici pentru a accesa setările'),
-          )
-        : ListView(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.pearlWhite,
+              AppColors.silverScale.withOpacity(0.1),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
             children: [
+              // 🏷️ Header premium
+              _buildPremiumHeader(),
+              
+              // ⚙️ Conținutul setărilor
+              Expanded(
+                child: !auth.isAuthenticated
+                    ? _buildUnauthenticatedState()
+                    : _buildSettingsList(auth),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPremiumHeader() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: AppColors.oceanDepth,
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.deepWater.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.pearlWhite.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(
+              Icons.settings_rounded,
+              color: AppColors.pearlWhite,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Setări',
+                  style: TextStyle(
+                    color: AppColors.pearlWhite,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Personalizează experiența ta',
+                  style: TextStyle(
+                    color: AppColors.pearlWhite.withOpacity(0.8),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUnauthenticatedState() {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: AppColors.pearlWhite,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.deepWater.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.coral.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Icon(
+                Icons.lock_outline_rounded,
+                size: 48,
+                color: AppColors.coral,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Autentificare necesară',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.deepWater,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Pentru a accesa setările, te rugăm să te autentifici mai întâi.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: AppColors.stormyWater,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsList(AuthState auth) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
               // Setări profil
               _buildSectionHeader('Profil'),
               ListTile(
@@ -161,21 +300,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               
               const SizedBox(height: 32),
-            ],
-          ),
+      ],
     );
   }
 
   Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Color(0xFF0A7F2E),
+    return Container(
+      margin: const EdgeInsets.fromLTRB(8, 24, 8, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.oceanBreeze.withOpacity(0.1),
+            AppColors.seaFoam.withOpacity(0.1),
+          ],
         ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.oceanBreeze.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 20,
+            decoration: BoxDecoration(
+              gradient: AppColors.oceanDepth,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.deepWater,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -68,65 +68,47 @@ class AuthState extends ChangeNotifier {
         return false;
       }
 
-      // 1. Încearcă să găsească utilizatorul în WooCommerce prin email
-      final response = await http.get(
-        Uri.parse('${AppConfig.baseUrl}/wp-json/wc/v3/customers?email=$email'),
+      // Verificare simplificată - încearcă autentificare directă WordPress
+      final authCheck = await http.get(
+        Uri.parse('${AppConfig.baseUrl}/wp-json/wp/v2/users/me'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Basic ${base64Encode(utf8.encode('${WooCommerceConfig.consumerKey}:${WooCommerceConfig.consumerSecret}'))}',
+          'Authorization': 'Basic ${base64Encode(utf8.encode('$email:$password'))}',
         },
       );
+      
+      print('🔒 Verificare WordPress: ${authCheck.statusCode}');
+      print('📋 Response: ${authCheck.body}');
+      
+      if (authCheck.statusCode == 200) {
+        // Autentificare reușită
+        final userData = jsonDecode(authCheck.body);
+        
+        _token = base64Encode(utf8.encode('$email:$password'));
+        _user = User(
+          id: userData['id'] ?? 1,
+          name: userData['name'] ?? userData['display_name'] ?? 'Utilizator',
+          email: userData['email'] ?? email,
+        );
 
-      print('📡 WooCommerce login răspuns: ${response.statusCode}');
-      print('📋 WooCommerce login body: ${response.body}');
+        // Salvează în storage
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user', jsonEncode({
+          'id': _user!.id,
+          'name': _user!.name,
+          'email': _user!.email,
+        }));
+        await prefs.setString('auth_token', _token!);
 
-      if (response.statusCode == 200) {
-        final customers = jsonDecode(response.body) as List;
-        if (customers.isNotEmpty) {
-          final customer = customers.first;
-          
-          // 2. Verifică parola prin încercarea de autentificare WordPress
-          final authCheck = await http.get(
-            Uri.parse('${AppConfig.baseUrl}/wp-json/wp/v2/users/me'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Basic ${base64Encode(utf8.encode('$email:$password'))}',
-            },
-          );
-          
-          print('🔒 Verificare parolă WordPress: ${authCheck.statusCode}');
-          
-          if (authCheck.statusCode == 200) {
-            // Parola este corectă, creează sesiunea
-            _token = base64Encode(utf8.encode('$email:$password'));
-            _user = User(
-              id: customer['id'] ?? 1,
-              name: '${customer['first_name'] ?? ''} ${customer['last_name'] ?? ''}'.trim(),
-              email: customer['email'] ?? email,
-            );
-
-            // Salvează în storage
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString('user', jsonEncode({
-              'id': _user!.id,
-              'name': _user!.name,
-              'email': _user!.email,
-            }));
-            await prefs.setString('auth_token', _token!);
-
-            print('✅ Login reușit pentru: ${_user!.name} (${_user!.email})');
-            _isLoading = false;
-            notifyListeners();
-            return true;
-          } else {
-            print('❌ Parolă incorectă pentru email: $email');
-          }
-        } else {
-          print('❌ Nu s-a găsit utilizatorul cu email: $email');
-        }
+        print('✅ Login reușit pentru: ${_user!.name} (${_user!.email})');
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else if (authCheck.statusCode == 401) {
+        print('❌ Credențiale invalide pentru: $email');
       } else {
-        print('❌ Eroare la căutarea utilizatorului: ${response.statusCode}');
-        print('📋 Detalii eroare: ${response.body}');
+        print('❌ Eroare WordPress API: ${authCheck.statusCode}');
+        print('📋 Detalii: ${authCheck.body}');
       }
     } catch (e) {
       print('❌ Excepție la login: $e');
