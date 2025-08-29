@@ -63,7 +63,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.deepWater.withOpacity(0.3),
+            color: AppColors.stormyWater.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -121,7 +121,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: AppColors.deepWater.withOpacity(0.1),
+              color: AppColors.stormyWater.withOpacity(0.1),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -148,7 +148,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.deepWater,
+                color: AppColors.stormyWater,
               ),
             ),
             const SizedBox(height: 12),
@@ -311,13 +311,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.oceanBreeze.withOpacity(0.1),
-            AppColors.seaFoam.withOpacity(0.1),
+            AppColors.clearWater.withOpacity(0.1),
+            AppColors.shallowWater.withOpacity(0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.oceanBreeze.withOpacity(0.3),
+          color: AppColors.clearWater.withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -337,7 +337,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: AppColors.deepWater,
+              color: AppColors.stormyWater,
             ),
           ),
         ],
