@@ -26,6 +26,12 @@ class AuthState extends ChangeNotifier {
   bool _isLoading = false;
 
   User? get user => _user;
+  Map<String, dynamic>? get currentUser => _user != null ? {
+    'id': _user!.id,
+    'email': _user!.email,
+    'first_name': _user!.name.split(' ').first,
+    'last_name': _user!.name.split(' ').length > 1 ? _user!.name.split(' ').skip(1).join(' ') : '',
+  } : null;
   bool get isAuthenticated => _user != null;
   bool get isLoading => _isLoading;
 

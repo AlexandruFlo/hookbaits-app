@@ -59,46 +59,46 @@ class _ProductListScreenState extends State<ProductListScreen> {
     if (products.isEmpty) {
       final testProducts = [
         Product(
-          id: 1,
+          id: '1',
           name: 'Momeala Carp Expert 1kg',
           permalink: 'https://hookbaits.ro/produs/momeala-carp-expert-1kg',
           priceRange: ProductPriceRange(minAmount: '45', maxAmount: '45'),
-          image: ProductImage(src: 'https://via.placeholder.com/300x300/0A7F2E/FFFFFF?text=Momeala+1'),
+          image: ProductImage(id: '1', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Momeala+1'),
         ),
         Product(
-          id: 2,
+          id: '2',
           name: 'Boilies Strawberry 20mm',
           permalink: 'https://hookbaits.ro/produs/boilies-strawberry-20mm',
           priceRange: ProductPriceRange(minAmount: '32', maxAmount: '32'),
-          image: ProductImage(src: 'https://via.placeholder.com/300x300/0A7F2E/FFFFFF?text=Boilies'),
+          image: ProductImage(id: '2', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Boilies'),
         ),
         Product(
-          id: 3,
+          id: '3',
           name: 'Carlig Method Feeder',
           permalink: 'https://hookbaits.ro/produs/carlig-method-feeder',
           priceRange: ProductPriceRange(minAmount: '18', maxAmount: '18'),
-          image: ProductImage(src: 'https://via.placeholder.com/300x300/0A7F2E/FFFFFF?text=Carlig'),
+          image: ProductImage(id: '3', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Carlig'),
         ),
         Product(
-          id: 4,
+          id: '4',
           name: 'Fir Monofilament 0.25mm',
           permalink: 'https://hookbaits.ro/produs/fir-monofilament-025mm',
           priceRange: ProductPriceRange(minAmount: '25', maxAmount: '25'),
-          image: ProductImage(src: 'https://via.placeholder.com/300x300/0A7F2E/FFFFFF?text=Fir'),
+          image: ProductImage(id: '4', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Fir'),
         ),
         Product(
-          id: 5,
+          id: '5',
           name: 'Lanseta Carp Pro 3.6m',
           permalink: 'https://hookbaits.ro/produs/lanseta-carp-pro-36m',
           priceRange: ProductPriceRange(minAmount: '180', maxAmount: '180'),
-          image: ProductImage(src: 'https://via.placeholder.com/300x300/0A7F2E/FFFFFF?text=Lanseta'),
+          image: ProductImage(id: '5', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Lanseta'),
         ),
         Product(
-          id: 6,
+          id: '6',
           name: 'Mulineta Quick Drag',
           permalink: 'https://hookbaits.ro/produs/mulineta-quick-drag',
           priceRange: ProductPriceRange(minAmount: '150', maxAmount: '150'),
-          image: ProductImage(src: 'https://via.placeholder.com/300x300/0A7F2E/FFFFFF?text=Mulineta'),
+          image: ProductImage(id: '6', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Mulineta'),
         ),
       ];
       
@@ -169,7 +169,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               child: Stack(
                 children: [
                   InkWell(
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProductScreen(productId: p.id))),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProductScreen(productId: int.tryParse(p.id) ?? 0))),
                     child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

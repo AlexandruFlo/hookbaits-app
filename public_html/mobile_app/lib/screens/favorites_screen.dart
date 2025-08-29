@@ -28,27 +28,27 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     setState(() {
       favorites = [
         Product(
-          id: 1,
+          id: '1',
           name: 'Momeala Carp Expert Premium 1kg',
           permalink: 'https://hookbaits.ro/produs/momeala-carp-expert-1kg',
           priceRange: ProductPriceRange(minAmount: '45.00', maxAmount: '45.00'),
-          image: ProductImage(src: 'https://via.placeholder.com/300x300/0A7F2E/FFFFFF?text=Momeala+Premium'),
+          image: ProductImage(id: '1', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Momeala+Premium'),
           descriptionHtml: 'Momeala premium pentru crap cu aromă intensă.',
         ),
         Product(
-          id: 5,
+          id: '5',
           name: 'Lanseta Carp Pro Carbon 3.6m',
           permalink: 'https://hookbaits.ro/produs/lanseta-carp-pro-36m',
           priceRange: ProductPriceRange(minAmount: '180.00', maxAmount: '180.00'),
-          image: ProductImage(src: 'https://via.placeholder.com/300x300/0A7F2E/FFFFFF?text=Lanseta+Pro'),
+          image: ProductImage(id: '5', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Lanseta+Pro'),
           descriptionHtml: 'Lanseta profesională din carbon pentru pescuitul crapului.',
         ),
         Product(
-          id: 6,
+          id: '6',
           name: 'Mulineta Quick Drag System',
           permalink: 'https://hookbaits.ro/produs/mulineta-quick-drag',
           priceRange: ProductPriceRange(minAmount: '150.00', maxAmount: '150.00'),
-          image: ProductImage(src: 'https://via.placeholder.com/300x300/0A7F2E/FFFFFF?text=Mulineta+QD'),
+          image: ProductImage(id: '6', src: 'https://via.placeholder.com/300x300/2C3E50/FFFFFF?text=Mulineta+QD'),
           descriptionHtml: 'Mulineta cu sistem quick drag pentru pescuit sportiv.',
         ),
       ];
