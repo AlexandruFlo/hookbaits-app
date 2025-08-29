@@ -143,9 +143,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     
                     const SizedBox(height: 40),
                     
-                    // Subtitle profesional
+                    // Subtitle profesional pentru producător de nadă
                     Text(
-                      'PROFESSIONAL FISHING GEAR',
+                      'PRODUCĂTOR PROFESIONAL DE NADĂ',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.6),
                         fontSize: 12,

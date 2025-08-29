@@ -57,80 +57,83 @@ class AuthState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Încearcă autentificarea WordPress standard
-      final response = await http.post(
-        Uri.parse('${AppConfig.baseUrl}/wp-json/wp/v2/users/me'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Basic ${base64Encode(utf8.encode('$email:$password'))}',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        _token = base64Encode(utf8.encode('$email:$password'));
-        _user = User(
-          id: data['id'] ?? 1,
-          name: data['name'] ?? data['display_name'] ?? 'Utilizator',
-          email: data['email'] ?? email,
-        );
-
-        // Salvează în storage
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('user', jsonEncode({
-          'id': _user!.id,
-          'name': _user!.name,
-          'email': _user!.email,
-        }));
-        await prefs.setString('auth_token', _token!);
-
+      print('🔐 Încerc autentificarea pentru: $email');
+      print('🌐 URL: ${AppConfig.baseUrl}');
+      
+      // Verifică dacă cheile WooCommerce sunt configurate
+      if (!WooCommerceConfig.isConfigured) {
+        print('❌ Cheile WooCommerce nu sunt configurate pentru login!');
         _isLoading = false;
         notifyListeners();
-        return true;
+        return false;
       }
-    } catch (e) {
-      // Continuă cu fallback
-    }
 
-    // Fallback - încearcă cu WooCommerce Customer API
-    try {
+      // 1. Încearcă să găsească utilizatorul în WooCommerce prin email
       final response = await http.get(
         Uri.parse('${AppConfig.baseUrl}/wp-json/wc/v3/customers?email=$email'),
         headers: {
-          'Authorization': 'Basic ${base64Encode(utf8.encode('$email:$password'))}',
+          'Content-Type': 'application/json',
+          'Authorization': 'Basic ${base64Encode(utf8.encode('${WooCommerceConfig.consumerKey}:${WooCommerceConfig.consumerSecret}'))}',
         },
       );
+
+      print('📡 WooCommerce login răspuns: ${response.statusCode}');
+      print('📋 WooCommerce login body: ${response.body}');
 
       if (response.statusCode == 200) {
         final customers = jsonDecode(response.body) as List;
         if (customers.isNotEmpty) {
           final customer = customers.first;
-          _token = base64Encode(utf8.encode('$email:$password'));
-          _user = User(
-            id: customer['id'] ?? 1,
-            name: '${customer['first_name'] ?? ''} ${customer['last_name'] ?? ''}'.trim(),
-            email: customer['email'] ?? email,
+          
+          // 2. Verifică parola prin încercarea de autentificare WordPress
+          final authCheck = await http.get(
+            Uri.parse('${AppConfig.baseUrl}/wp-json/wp/v2/users/me'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Basic ${base64Encode(utf8.encode('$email:$password'))}',
+            },
           );
+          
+          print('🔒 Verificare parolă WordPress: ${authCheck.statusCode}');
+          
+          if (authCheck.statusCode == 200) {
+            // Parola este corectă, creează sesiunea
+            _token = base64Encode(utf8.encode('$email:$password'));
+            _user = User(
+              id: customer['id'] ?? 1,
+              name: '${customer['first_name'] ?? ''} ${customer['last_name'] ?? ''}'.trim(),
+              email: customer['email'] ?? email,
+            );
 
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('user', jsonEncode({
-            'id': _user!.id,
-            'name': _user!.name,
-            'email': _user!.email,
-          }));
-          await prefs.setString('auth_token', _token!);
+            // Salvează în storage
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('user', jsonEncode({
+              'id': _user!.id,
+              'name': _user!.name,
+              'email': _user!.email,
+            }));
+            await prefs.setString('auth_token', _token!);
 
-          _isLoading = false;
-          notifyListeners();
-          return true;
+            print('✅ Login reușit pentru: ${_user!.name} (${_user!.email})');
+            _isLoading = false;
+            notifyListeners();
+            return true;
+          } else {
+            print('❌ Parolă incorectă pentru email: $email');
+          }
+        } else {
+          print('❌ Nu s-a găsit utilizatorul cu email: $email');
         }
+      } else {
+        print('❌ Eroare la căutarea utilizatorului: ${response.statusCode}');
+        print('📋 Detalii eroare: ${response.body}');
       }
     } catch (e) {
-      // Continuă cu demo
+      print('❌ Excepție la login: $e');
     }
 
     // ❌ AUTENTIFICARE EȘUATĂ - doar conturi reale!
-    print('❌ Autentificare eșuată - cont inexistent sau parolă greșită');
+    print('❌ Autentificare eșuată - verifică email și parola');
     _isLoading = false;
     notifyListeners();
     return false;

@@ -399,10 +399,14 @@ class _PremiumProductCardState extends State<PremiumProductCard>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.euro_symbol,
-            color: AppColors.goldenHour,
-            size: 12,
+          Text(
+            'LEI',
+            style: TextStyle(
+              color: AppColors.goldenHour,
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.5,
+            ),
           ),
           const SizedBox(width: 2),
           Text(
