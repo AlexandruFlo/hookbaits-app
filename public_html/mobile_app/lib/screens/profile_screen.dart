@@ -539,4 +539,3 @@ class _MenuItemData {
     required this.onTap,
   });
 }
-}
