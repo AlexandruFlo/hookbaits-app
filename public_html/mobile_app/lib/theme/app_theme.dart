@@ -1,28 +1,91 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Paleta de culori HOOKBAITS
-  static const Color primary = Color(0xFF2C3E50);        // Albastru închis principal
-  static const Color primaryLight = Color(0xFF34495E);   // Albastru mediu
-  static const Color primaryDark = Color(0xFF1B2631);    // Albastru foarte închis
+  // 🎣 PALETA PREMIUM HOOKBAITS - Inspirată din natura pescuitului
   
-  static const Color secondary = Color(0xFF3498DB);      // Albastru secundar
-  static const Color accent = Color(0xFF2980B9);         // Accent
+  // Culori principale - Nuanțe de apă profundă
+  static const Color deepOcean = Color(0xFF0B1426);      // Albastru oceanic profund
+  static const Color midnight = Color(0xFF1A2332);       // Albastru miezul nopții  
+  static const Color stormyWater = Color(0xFF2C3E50);    // Albastru furtună
+  static const Color clearWater = Color(0xFF3B5470);     // Albastru apă limpede
+  static const Color shallowWater = Color(0xFF5A7394);   // Albastru apă puțin adâncă
   
-  static const Color success = Color(0xFF27AE60);        // Verde pentru succes
-  static const Color warning = Color(0xFFF39C12);        // Portocaliu pentru warning
-  static const Color error = Color(0xFFE74C3C);          // Roșu pentru erori
+  // Accente premium - Reflexii și lumină
+  static const Color goldenHour = Color(0xFFD4AF37);     // Auriu ora de aur
+  static const Color silverScale = Color(0xFFB8C5D1);    // Argintiu solzi
+  static const Color pearlWhite = Color(0xFFF8FAFC);     // Alb perlă
+  static const Color crystalClear = Color(0xFFFFFFFF);   // Cristal clar
   
-  static const Color background = Color(0xFFF8F9FA);     // Background
-  static const Color surface = Colors.white;             // Suprafețe
-  static const Color surfaceVariant = Color(0xFFECF0F1); // Variante suprafețe
+  // Culori naturale - Elemente de natură
+  static const Color seaweed = Color(0xFF2D5016);        // Verde alge marine
+  static const Color sunset = Color(0xFFFF8C42);         // Portocaliu apus
+  static const Color sunrise = Color(0xFFFFB627);        // Galben răsărit
+  static const Color coral = Color(0xFFE74C3C);          // Roșu coral
   
-  static const Color textPrimary = Color(0xFF2C3E50);    // Text principal
-  static const Color textSecondary = Color(0xFF7F8C8D);  // Text secundar
-  static const Color textLight = Color(0xFFBDC3C7);      // Text deschis
+  // Gradienți premium
+  static const LinearGradient oceanDepth = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [deepOcean, midnight, stormyWater],
+    stops: [0.0, 0.5, 1.0],
+  );
   
-  static const Color border = Color(0xFFD5DBDB);         // Borduri
-  static const Color divider = Color(0xFFECF0F1);        // Separatoare
+  static const LinearGradient waterSurface = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [clearWater, shallowWater, silverScale],
+    stops: [0.0, 0.6, 1.0],
+  );
+  
+  static const LinearGradient goldenReflection = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [goldenHour, sunrise],
+  );
+  
+  static const LinearGradient premiumSurface = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [pearlWhite, silverScale],
+  );
+  
+  // Gradienți pentru cardurile premium
+  static const LinearGradient oceanicGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [deepOcean, stormyWater, clearWater],
+    stops: [0.0, 0.6, 1.0],
+  );
+  
+  static const LinearGradient premiumButtonGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [stormyWater, deepOcean],
+  );
+  
+  static const LinearGradient coralGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [coral, sunset],
+  );
+  
+  // Aliasuri pentru compatibilitate
+  static const Color primary = deepOcean;
+  static const Color primaryLight = stormyWater;
+  static const Color primaryDark = midnight;
+  static const Color secondary = goldenHour;
+  static const Color accent = silverScale;
+  static const Color success = seaweed;
+  static const Color warning = sunrise;
+  static const Color error = coral;
+  static const Color background = pearlWhite;
+  static const Color surface = crystalClear;
+  static const Color surfaceVariant = silverScale;
+  static const Color textPrimary = deepOcean;
+  static const Color textSecondary = stormyWater;
+  static const Color textLight = shallowWater;
+  static const Color border = silverScale;
+  static const Color divider = Color(0xFFE2E8F0);
 }
 
 class AppTheme {
@@ -41,20 +104,42 @@ class AppTheme {
         brightness: Brightness.light,
       ),
       
-      // AppBar Theme
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 2,
+      // 🌊 AppBar Theme Premium cu gradient oceanic
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.deepOcean,
+        foregroundColor: AppColors.pearlWhite,
+        elevation: 12,
+        shadowColor: AppColors.deepOcean.withOpacity(0.3),
         centerTitle: true,
-        titleTextStyle: TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
+        toolbarHeight: 72, // Înălțime mărită pentru eleganță
+        titleTextStyle: const TextStyle(
+          color: AppColors.pearlWhite,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.5,
+          shadows: [
+            Shadow(
+              color: AppColors.midnight,
+              offset: Offset(0, 2),
+              blurRadius: 4,
+            ),
+          ],
         ),
-        iconTheme: IconThemeData(color: Colors.white),
-        actionsIconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(
+          color: AppColors.pearlWhite,
+          size: 26,
+          shadows: [
+            Shadow(
+              color: AppColors.midnight,
+              offset: Offset(0, 1),
+              blurRadius: 2,
+            ),
+          ],
+        ),
+        actionsIconTheme: const IconThemeData(
+          color: AppColors.pearlWhite,
+          size: 26,
+        ),
       ),
       
       // Navigation Bar Theme

@@ -9,6 +9,7 @@ import '../state/cart.dart';
 import 'product_screen.dart';
 import 'search_screen.dart';
 import '../widgets/hookbaits_logo.dart';
+import '../widgets/premium_product_card.dart';
 import '../theme/app_theme.dart';
 
 class ProductListScreen extends StatefulWidget {
@@ -81,36 +82,44 @@ class _ProductListScreenState extends State<ProductListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            // Logo Hook_alb-400x122.png în AppBar
-            Container(
+        title: Container(
+          // Banner Hook_alb-400x122.png înlocuiește complet textul HOOKBAITS
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset(
+              'assets/logo.png', // Hook_alb-400x122.png
               height: 40,
-              width: 80,
-              decoration: BoxDecoration(
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => Container(
                 color: Colors.black,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.asset(
-                  'assets/logo.png', // Hook_alb-400x122.png
-                  height: 40,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: Colors.black,
-                    child: const Icon(
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
                       Icons.phishing_outlined,
                       color: Colors.white,
                       size: 24,
                     ),
-                  ),
+                    SizedBox(width: 8),
+                    Text(
+                      'HOOKBAITS',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(width: 12),
-            const Expanded(child: HookbaitsLogoCompact()),
-          ],
+          ),
         ),
         actions: [
           IconButton(
@@ -146,172 +155,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
             final p = products[index];
             final imageUrl = p.image?.src;
             final price = p.priceRange?.minAmount ?? '';
-            return Card(
-              elevation: 4,
-              margin: const EdgeInsets.all(6),
-              clipBehavior: Clip.antiAlias,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Stack(
-                children: [
-                  InkWell(
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProductScreen(productId: int.tryParse(p.id) ?? 0))),
-                    child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: Container(
-                        width: double.infinity,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Color(0xFFF8F9FA), Color(0xFFE9ECEF)],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                        ),
-                        child: imageUrl == null
-                            ? const Icon(Icons.inventory_2_outlined, size: 60, color: Color(0xFF2C3E50))
-                            : CachedNetworkImage(
-                                imageUrl: imageUrl, 
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => const Center(
-                                  child: CircularProgressIndicator(color: Color(0xFF2C3E50)),
-                                ),
-                                errorWidget: (context, url, error) => const Icon(
-                                  Icons.inventory_2_outlined, 
-                                  size: 60, 
-                                  color: Color(0xFF2C3E50),
-                                ),
-                              ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              p.name, 
-                              maxLines: 2, 
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                height: 1.2,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            if (price.isNotEmpty) Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF2C3E50),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    '$price Lei',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                                InkWell(
-                                  onTap: () {
-                                    final cart = context.read<CartState>();
-                                    cart.add(p);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('${p.name} adăugat în coș'),
-                                        backgroundColor: const Color(0xFF2C3E50),
-                                        duration: const Duration(seconds: 2),
-                                        action: SnackBarAction(
-                                          label: 'VEZI',
-                                          textColor: Colors.white,
-                                          onPressed: () {
-                                            // Navighează la coș (tab index 1)
-                                            DefaultTabController.of(context)?.animateTo(1);
-                                          },
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: const Color(0xFF2C3E50)),
-                                    ),
-                                    child: const Icon(
-                                      Icons.add_shopping_cart,
-                                      color: Color(0xFF2C3E50),
-                                      size: 16,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                  ),
-                  // Inimioara pentru favorite
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Consumer<FavoritesState>(
-                      builder: (context, favorites, child) {
-                        final isFavorite = favorites.isFavorite(p);
-                        return InkWell(
-                          onTap: () async {
-                            await favorites.toggleFavorite(p);
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(isFavorite 
-                                      ? '${p.name} eliminat din favorite' 
-                                      : '${p.name} adăugat la favorite'),
-                                  backgroundColor: isFavorite ? Colors.grey[600] : Colors.red[600],
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              isFavorite ? Icons.favorite : Icons.favorite_border,
-                              color: Colors.red,
-                              size: 18,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
+            
+            // 🎣 CARDUL PREMIUM ANIMAT cu efecte oceanice!
+            return PremiumProductCard(
+              product: p,
+              imageUrl: imageUrl,
+              price: price,
             );
           },
         ),

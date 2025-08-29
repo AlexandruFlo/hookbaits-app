@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/cart.dart';
@@ -5,7 +6,8 @@ import '../state/auth_state.dart';
 import '../api/woocommerce_api.dart';
 import '../utils/form_validators.dart';
 import '../theme/app_theme.dart';
-import '../state/auth_state.dart';
+import 'checkout_webview_screen.dart';
+import '../config.dart';
 
 class NativeCheckoutScreen extends StatefulWidget {
   const NativeCheckoutScreen({super.key});
@@ -539,10 +541,11 @@ class _NativeCheckoutScreenState extends State<NativeCheckoutScreen> {
       return;
     }
     
-    // 6. Pentru plățile cu cardul, validări suplimentare
+    // 6. Pentru plățile cu cardul, redirectionează către site-ul real
     if (_selectedPaymentMethod == 'card') {
-      final confirmed = await _confirmCardPayment();
-      if (!confirmed) return;
+      // Pentru plata cu cardul, folosim checkout-ul real al site-ului
+      await _processCardPaymentOnWebsite();
+      return;
     }
 
     setState(() => _isProcessing = true);
@@ -666,7 +669,55 @@ class _NativeCheckoutScreenState extends State<NativeCheckoutScreen> {
     );
   }
 
-  // Confirmare pentru plată cu cardul
+  // Procesează plata reală cu cardul prin site-ul hookbaits.ro
+  Future<void> _processCardPaymentOnWebsite() async {
+    final cart = context.read<CartState>();
+    
+    // Pregătește produsele pentru checkout-ul site-ului
+    final cartItems = cart.items.map((item) => 
+      'product_id=${item.product.id}&quantity=${item.quantity}'
+    ).join('&');
+    
+    // Date client pentru pre-completare
+    final customerData = Uri.encodeQueryComponent(jsonEncode({
+      'first_name': _firstNameController.text,
+      'last_name': _lastNameController.text,
+      'email': _emailController.text,
+      'phone': _phoneController.text,
+      'address': _addressController.text,
+      'city': _cityController.text,
+      'county': _countyController.text,
+      'postal_code': _postalCodeController.text,
+    }));
+    
+    // URL checkout real hookbaits.ro cu produsele din coș
+    final checkoutUrl = '${AppConfig.baseUrl}/checkout/?$cartItems&customer_data=$customerData&payment=card';
+    
+    if (mounted) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => CheckoutWebViewScreen(
+            checkoutUrl: checkoutUrl,
+            onOrderComplete: () {
+              // După finalizarea plății pe site
+              cart.clear();
+              Navigator.of(context).pop(); // Întoarce la checkout
+              Navigator.of(context).pop(); // Întoarce la coș
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('✅ Plata cu cardul a fost procesată cu succes!'),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    }
+  }
+
+  // Confirmare pentru plată cu cardul (LEGACY - nu se mai folosește)
   Future<bool> _confirmCardPayment() async {
     final confirmed = await showDialog<bool>(
       context: context,
