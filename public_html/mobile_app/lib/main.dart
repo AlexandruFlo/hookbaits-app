@@ -37,15 +37,21 @@ class HookbaitsApp extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          bottomNavigationBarTheme: const BottomNavigationBarTheme(
-            selectedItemColor: Color(0xFF0A7F2E),
-            unselectedItemColor: Colors.grey,
-            elevation: 8,
-            type: BottomNavigationBarType.fixed,
-          ),
-          navigationBarTheme: const NavigationBarThemeData(
+          navigationBarTheme: NavigationBarThemeData(
             backgroundColor: Colors.white,
-            indicatorColor: Color(0xFF0A7F2E),
+            indicatorColor: const Color(0xFF0A7F2E).withOpacity(0.2),
+            labelTextStyle: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
+                return const TextStyle(color: Color(0xFF0A7F2E), fontWeight: FontWeight.bold);
+              }
+              return const TextStyle(color: Colors.grey);
+            }),
+            iconTheme: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
+                return const IconThemeData(color: Color(0xFF0A7F2E));
+              }
+              return const IconThemeData(color: Colors.grey);
+            }),
             elevation: 8,
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
